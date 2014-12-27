@@ -241,7 +241,9 @@ final case class Field(vector: Vector2D[PosValue], scoreRed: Int, scoreBlack: In
         _ring.last :: _ring
       else
         _ring
-    (__ring, __ring.tail, __ring.tail.tail).zipped.count { case (a, b, c) => b == pos.y && ((a < b && c > b) || (a > b && c < b)) } % 2 == 1
+    (__ring, __ring.tail, __ring.tail.tail).zipped.count {
+      case (a, b, c) => b == pos.y && ((a < b && c > b) || (a > b && c < b))
+    } % 2 == 1
   }
   def wave(startPos: Pos, f: Pos => Boolean): List[Pos] = {
     def neighborhood(pos: Pos): List[Pos] =
