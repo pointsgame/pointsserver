@@ -167,19 +167,13 @@ final case class Field(vector: Vector2D[PosValue], scoreRed: Int, scoreBlack: In
       else
         getNextPlayerPos(centerPos, getNextPos(centerPos, pos))
     @tailrec
-    def cut(list: List[Pos], pos: Pos): List[Pos] =
-      if (list.head == pos)
-        list
-      else
-        cut(list.tail, pos)
-    @tailrec
     def getChain(start: Pos, list: List[Pos]): List[Pos] = {
       val h = list.head
       val nextPos = getNextPlayerPos(h, getFirstNextPos(h, start))
       if (nextPos == startPos)
         list
       else if (list.contains(nextPos))
-        getChain(h, cut(list, nextPos))
+        getChain(h, list.dropWhile(_ != nextPos))
       else
         getChain(h, nextPos :: list)
     }
