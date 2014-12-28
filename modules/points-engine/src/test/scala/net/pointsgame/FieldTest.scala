@@ -33,7 +33,7 @@ class FieldTest extends FunSuite with Checkers {
       all(
         (finalField.scoreRed >= 0) :| "Red score is non-negative.",
         (finalField.scoreBlack >= 0) :| "Black score is non-negative.",
-        (field.scoreRed + field.scoreBlack <= width * height - 2 * (width + height) + 4) :| "Full score less than field size."
+        (field.scoreRed + field.scoreBlack <= (width - 2) * (height - 2)) :| "Full score less than field size."
       )
     }
     all(
