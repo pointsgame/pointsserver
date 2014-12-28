@@ -5,9 +5,9 @@ val nscalaTime = "com.github.nscala-time" %% "nscala-time" % "1.6.0"
 val scalaz = "org.scalaz" %% "scalaz-core" % "7.1.0"
 
 val commonSettings = Seq(
-   version := "1.0.0-SNAPSHOT",
-   scalaVersion := "2.11.4",
-   scalacOptions := Seq(
+  version := "1.0.0-SNAPSHOT",
+  scalaVersion := "2.11.4",
+  scalacOptions := Seq(
     "-unchecked",
     "-deprecation",
     "-feature",
