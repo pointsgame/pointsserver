@@ -78,10 +78,8 @@ final case class Field(vector: Vector2D[PosValue], scoreRed: Int, scoreBlack: In
     vector.width
   def height: Int =
     vector.height
-  def lastPlayer: Option[Player] = moves match {
-    case Nil    => None
-    case h :: _ => Some(h.player)
-  }
+  def lastPlayer: Option[Player] =
+    moves.headOption.map(_.player)
   def apply(pos: Pos): PosValue =
     vector(pos.x, pos.y)
   def isInField(pos: Pos): Boolean =
