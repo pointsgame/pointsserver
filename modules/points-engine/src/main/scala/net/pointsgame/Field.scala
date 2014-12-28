@@ -86,6 +86,7 @@ final case class Field(vector: Vector2D[PosValue], scoreRed: Int, scoreBlack: In
     pos.x >= 0 && pos.x < width && pos.y >= 0 && pos.y < height
   def isPuttingAllowed(pos: Pos): Boolean =
     isInField(pos) && apply(pos).isFree
+  /** Returns `true` if the player controls the Pos (same color or has surrounded the Pos) */
   def isPlayersPoint(pos: Pos, player: Player): Boolean =
     isInField(pos) && apply(pos).isPlayer(player)
   def getFirstNextPos(centerPos: Pos, pos: Pos): Pos = (pos.dx(centerPos), pos.dy(centerPos)) match {

@@ -7,7 +7,7 @@ import org.scalacheck._
 import org.scalacheck.Prop._
 
 class FieldTest extends FunSuite with Checkers {
-  test("simple surround check") {
+  test("simple surround") {
     val field = Field(10, 10)
       .putPoint(Pos(5, 5), Player.Black)
       .putPoint(Pos(4, 5), Player.Red)
@@ -18,6 +18,7 @@ class FieldTest extends FunSuite with Checkers {
     assert(field.scoreRed == 1)
     assert(field.isPlayersPoint(Pos(5, 5), Player.Red))
   }
+
   val minSize = 3
   val maxSize = 50
   val lengthGen = Gen.choose(minSize, maxSize)
@@ -33,7 +34,7 @@ class FieldTest extends FunSuite with Checkers {
       all(
         (finalField.scoreRed >= 0) :| "Red score is non-negative.",
         (finalField.scoreBlack >= 0) :| "Black score is non-negative.",
-        (Math.abs(field.scoreRed - field.scoreBlack) < 1 + width * height / 2) :| "Score difference more than half field size.",
+        (math.abs(field.scoreRed - field.scoreBlack) < 1 + width * height / 2) :| "Score difference should be less than number of player moves",
         (field.scoreRed + field.scoreBlack <= (width - 2) * (height - 2)) :| "Full score less than field size."
       )
     }
