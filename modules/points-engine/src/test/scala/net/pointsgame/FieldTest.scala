@@ -32,14 +32,14 @@ class FieldTest extends FunSuite with Checkers {
     }
     val propsTry = finalFieldTry.map { finalField =>
       all(
-        (finalField.scoreRed >= 0) :| "Red score should be non-negative.",
-        (finalField.scoreBlack >= 0) :| "Black score should be non-negative.",
-        ((field.scoreRed - field.scoreBlack).abs < width * height / 2) :| "Score difference should be less than number of player moves",
-        (field.scoreRed + field.scoreBlack <= (width - 2) * (height - 2)) :| "Full score should be less than field size."
+        (finalField.scoreRed >= 0) :| "red score should be non-negative",
+        (finalField.scoreBlack >= 0) :| "black score should be non-negative",
+        ((field.scoreRed - field.scoreBlack).abs < width * height / 2) :| "score difference should be less than number of player moves",
+        (field.scoreRed + field.scoreBlack <= (width - 2) * (height - 2)) :| "full score should be less than field size"
       )
     }
     all(
-      finalFieldTry.isSuccess :| "Should not be exceptions.",
+      finalFieldTry.isSuccess :| "should be no exceptions",
       propsTry.get
     )
   }))
