@@ -1,4 +1,4 @@
-package net.pointsgame
+package net.pointsgame.field_engine
 
 import scala.util.{ Random, Try }
 import org.scalatest.FunSuite

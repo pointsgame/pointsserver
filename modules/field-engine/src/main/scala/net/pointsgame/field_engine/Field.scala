@@ -1,4 +1,4 @@
-package net.pointsgame
+package net.pointsgame.field_engine
 
 import scala.annotation.tailrec
 

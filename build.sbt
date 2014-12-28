@@ -30,9 +30,9 @@ val commonSettings = scalariformSettings ++ Seq(
   )
 )
 
-lazy val pointsEngine = project.in(file("./modules/points-engine"))
+lazy val pointsEngine = project.in(file("./modules/field-engine"))
   .settings(commonSettings: _*)
-  .settings(name := "points-engine")
+  .settings(name := "field-engine")
 
 lazy val akkaNetwork = project.in(file("./modules/akka-network"))
   .settings(commonSettings: _*)
