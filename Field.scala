@@ -290,9 +290,10 @@ final case class Field(vector: Vector2D[PosValue], scoreRed: Int, scoreBlack: In
           capturedCount = captured.count(isPlayersPoint(_, enemy))
         } yield (chain, captured, capturedCount)
     }
+    lazy val (realCaptures, emptyCaptures) = captures.partition(_._3 != 0)
     lazy val deltaScore = captures.map(_._3).sum
-    lazy val realCaptured = captures.filter(_._3 != 0).flatMap(_._2)
-    lazy val captureChain = captures.filter(_._3 != 0).flatMap(_._1.reverse)
+    lazy val realCaptured = realCaptures.flatMap(_._2)
+    lazy val captureChain = realCaptures.flatMap(_._1.reverse)
     if (value.isEmptyBase(player)) {
       Field(vector.updated(pos.x, pos.y, PlayerPosValue(player)), scoreRed, scoreBlack, PosPlayer(pos, player) :: moves, (Nil, player) :: surroundChains)
     } else if (value.isEmptyBase(enemy)) {
@@ -311,7 +312,7 @@ final case class Field(vector: Vector2D[PosValue], scoreRed: Int, scoreBlack: In
         Field(updatedVector, newScoreRed, newScoreBlack, PosPlayer(pos, player) :: moves, (enemyEmptyBaseChain, enemy) :: surroundChains)
       }
     } else {
-      val newEmptyBase = captures.filter(_._3 == 0).flatMap(_._2)
+      val newEmptyBase = emptyCaptures.flatMap(_._2)
       val newScoreRed = if (player == Player.Red) scoreRed + deltaScore else scoreRed
       val newScoreBlack = if (player == Player.Black) scoreBlack + deltaScore else scoreBlack
       val updatedVector1 = vector.updated(pos.x, pos.y, PlayerPosValue(player))
