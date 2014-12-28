@@ -26,3 +26,4 @@ val commonSettings = Seq(
 
 lazy val pointsEngine = project.in(file("./modules/points-engine"))
   .settings(commonSettings: _*)
+  .settings(name := "points-engine")
