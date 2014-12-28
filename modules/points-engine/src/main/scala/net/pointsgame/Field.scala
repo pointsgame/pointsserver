@@ -2,42 +2,6 @@ package net.pointsgame
 
 import scala.annotation.tailrec
 
-final case class Vector2D[T](width: Int, vector: Vector[T]) extends Iterable[T] {
-  assert(vector.size > 0, "Vector2D: Vector is empty.")
-  assert(vector.size % width == 0, "Vector2D: Vector length is not divisible by width.")
-  val height = vector.size / width
-  private def toIndex(x: Int, y: Int): Int =
-    y * width + x
-  private def toX(idx: Int): Int =
-    idx % width
-  private def toY(idx: Int): Int =
-    idx / width
-  def apply(x: Int, y: Int): T =
-    vector(toIndex(x, y))
-  def map[U](f: T => U): Vector2D[U] =
-    Vector2D(width, vector.map(f))
-  def mapWithIndex[U](f: (Int, Int, T) => U): Vector2D[U] =
-    Vector2D(width, vector.zipWithIndex.map {
-      case (value, idx) => f(toX(idx), toY(idx), value)
-    })
-  def updated(x: Int, y: Int, elem: T): Vector2D[T] =
-    Vector2D(width, vector.updated(toIndex(x, y), elem))
-  override def iterator: Iterator[T] =
-    vector.iterator
-}
-
-object Vector2D {
-  def apply[T](rows: Vector[Vector[T]]): Vector2D[T] = {
-    assert(rows.forall(_.size == rows.head.size), "Vector2D: Vectors have different sizes.")
-    Vector2D(rows.head.size, rows.flatten)
-  }
-  def single[T](elem: T): Vector2D[T] =
-    Vector2D(1, Vector(elem))
-  def fill[T](width: Int, height: Int)(elem: T): Vector2D[T] =
-    Vector2D(width, Vector.fill(width * height)(elem))
-}
-
-
 sealed trait Player {
   def next: Player
 }
@@ -84,7 +48,7 @@ sealed trait PosValue {
   def isEmptyBase(player: Player): Boolean
   def isPlayer(player: Player): Boolean
 }
-final case object EmptyPosValue extends PosValue {
+case object EmptyPosValue extends PosValue {
   override def isFree: Boolean =
     true
   override def isEmptyBase(player: Player): Boolean =
