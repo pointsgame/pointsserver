@@ -88,26 +88,26 @@ final case class Field(vector: Vector2D[PosValue], scoreRed: Int, scoreBlack: In
     isInField(pos) && apply(pos).isPlayer(player)
   def getFirstNextPos(centerPos: Pos, pos: Pos): Pos = (pos.dx(centerPos), pos.dy(centerPos)) match {
     case (-1, -1) => centerPos.se
-    case ( 0, -1) => centerPos.ne
-    case ( 1, -1) => centerPos.ne
-    case (-1,  0) => centerPos.se
-    case ( 0,  0) => centerPos.se
-    case ( 1,  0) => centerPos.nw
-    case (-1,  1) => centerPos.sw
-    case ( 0,  1) => centerPos.sw
-    case ( 1,  1) => centerPos.nw
+    case (0, -1)  => centerPos.ne
+    case (1, -1)  => centerPos.ne
+    case (-1, 0)  => centerPos.se
+    case (0, 0)   => centerPos.se
+    case (1, 0)   => centerPos.nw
+    case (-1, 1)  => centerPos.sw
+    case (0, 1)   => centerPos.sw
+    case (1, 1)   => centerPos.nw
     case _        => throw new IllegalArgumentException(s"getFirstNextPos: not adjacent points: $centerPos and $pos.")
   }
   def getNextPos(centerPos: Pos, pos: Pos): Pos = (pos.dx(centerPos), pos.dy(centerPos)) match {
     case (-1, -1) => pos.e
-    case ( 0, -1) => pos.e
-    case ( 1, -1) => pos.n
-    case (-1,  0) => pos.s
-    case ( 0,  0) => pos.s
-    case ( 1,  0) => pos.n
-    case (-1,  1) => pos.s
-    case ( 0,  1) => pos.w
-    case ( 1,  1) => pos.w
+    case (0, -1)  => pos.e
+    case (1, -1)  => pos.n
+    case (-1, 0)  => pos.s
+    case (0, 0)   => pos.s
+    case (1, 0)   => pos.n
+    case (-1, 1)  => pos.s
+    case (0, 1)   => pos.w
+    case (1, 1)   => pos.w
     case _        => throw new IllegalArgumentException(s"getNextPos: not adjacent points: $centerPos and $pos.")
   }
   def fiberBundle(pos1: Pos, pos2: Pos): Int =
@@ -236,7 +236,7 @@ final case class Field(vector: Vector2D[PosValue], scoreRed: Int, scoreBlack: In
         val chains = inputPoints.flatMap { case (chainPos, _) => buildChain(pos, chainPos, player) }
         chains.find(isPosInsideRing(startPos, _)) match {
           case Some(result) => result
-          case None => getEmptyBaseChain(pos.w)
+          case None         => getEmptyBaseChain(pos.w)
         }
       }
     val emptyBaseChain = getEmptyBaseChain(startPos.w)
