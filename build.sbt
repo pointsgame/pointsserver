@@ -38,3 +38,8 @@ lazy val akkaNetwork = project.in(file("./modules/akka-network"))
   .settings(commonSettings: _*)
   .settings(name := "akka-network")
   .settings(libraryDependencies += akkaLib)
+
+// dummy module to aggregate other modules
+lazy val root = project.in(file("."))
+  .settings(commonSettings: _*)
+  .aggregate(pointsEngine, akkaNetwork)
