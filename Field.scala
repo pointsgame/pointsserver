@@ -291,7 +291,7 @@ final case class Field(vector: Vector2D[PosValue], scoreRed: Int, scoreBlack: In
         } yield (chain, captured, capturedCount)
     }
     lazy val (realCaptures, emptyCaptures) = captures.partition(_._3 != 0)
-    lazy val deltaScore = captures.map(_._3).sum
+    lazy val deltaScore = realCaptures.map(_._3).sum
     lazy val realCaptured = realCaptures.flatMap(_._2)
     lazy val captureChain = realCaptures.flatMap(_._1.reverse)
     if (value.isEmptyBase(player)) {
