@@ -23,7 +23,7 @@ class FieldTest extends FunSuite with Checkers {
   val maxSize = 50
   val lengthGen = Gen.choose(minSize, maxSize)
   val seedGen = Arbitrary.arbitrary[Int]
-  test("Random game.")(check(Prop.forAll(lengthGen, lengthGen, seedGen) { (width: Int, height: Int, seed: Int) =>
+  test("random game")(check(Prop.forAll(lengthGen, lengthGen, seedGen) { (width: Int, height: Int, seed: Int) =>
     val random = new Random(seed)
     val moves = random.shuffle((0 until width * height).toVector).map(idx => Pos(idx % width, idx / width))
     val field = Field(width, height)
@@ -32,14 +32,14 @@ class FieldTest extends FunSuite with Checkers {
     }
     val propsTry = finalFieldTry.map { finalField =>
       all(
-        (finalField.scoreRed >= 0) :| "Red score is non-negative.",
-        (finalField.scoreBlack >= 0) :| "Black score is non-negative.",
-        (math.abs(field.scoreRed - field.scoreBlack) < 1 + width * height / 2) :| "Score difference should be less than number of player moves",
-        (field.scoreRed + field.scoreBlack <= (width - 2) * (height - 2)) :| "Full score less than field size."
+        (finalField.scoreRed >= 0) :| "Red score should be non-negative.",
+        (finalField.scoreBlack >= 0) :| "Black score should be non-negative.",
+        ((field.scoreRed - field.scoreBlack).abs < width * height / 2) :| "Score difference should be less than number of player moves",
+        (field.scoreRed + field.scoreBlack <= (width - 2) * (height - 2)) :| "Full score should be less than field size."
       )
     }
     all(
-      finalFieldTry.isSuccess :| "No exceptions.",
+      finalFieldTry.isSuccess :| "Should not be exceptions.",
       propsTry.get
     )
   }))
