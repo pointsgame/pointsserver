@@ -1,0 +1,15 @@
+#### IDE-s
+/.cache
+/.classpath
+/.ensime
+/.idea*
+/.project
+/.settings
+
+#### sbt output
+/target
+/modules/*/target
+/project/target
+/modules/*/project/target
+/project/project
+/modules/*/project/project
