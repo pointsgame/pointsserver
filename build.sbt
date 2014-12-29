@@ -30,9 +30,9 @@ val commonSettings = scalariformSettings ++ Seq(
   )
 )
 
-lazy val pointsEngine = project.in(file("./modules/field-engine"))
+lazy val paperEngine = project.in(file("./modules/paper-engine"))
   .settings(commonSettings: _*)
-  .settings(name := "field-engine")
+  .settings(name := "paper-engine")
 
 lazy val akkaNetwork = project.in(file("./modules/akka-network"))
   .settings(commonSettings: _*)
@@ -42,4 +42,4 @@ lazy val akkaNetwork = project.in(file("./modules/akka-network"))
 // dummy module to aggregate other modules
 lazy val root = project.in(file("."))
   .settings(commonSettings: _*)
-  .aggregate(pointsEngine, akkaNetwork)
+  .aggregate(paperEngine, akkaNetwork)
