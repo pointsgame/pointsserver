@@ -21,6 +21,7 @@ val commonSettings = scalariformSettings ++ Seq(
   ),
   ScalariformKeys.preferences := ScalariformKeys.preferences.value
     .setPreference(DoubleIndentClassDeclaration, true)
+    .setPreference(MultilineScaladocCommentsStartOnFirstLine, true)
     .setPreference(AlignSingleLineCaseStatements, true),
   libraryDependencies ++= Seq(
     scalatest,
