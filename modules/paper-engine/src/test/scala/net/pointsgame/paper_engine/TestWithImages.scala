@@ -4,11 +4,76 @@ import org.scalatest.{ DiagrammedAssertions, FunSuite }
 
 class TestWithImages extends FunSuite with DiagrammedAssertions {
 
-  /** Place Red points everywhere on 'a' letter,
-   *  then place Black points everywhere on 'A' letter,
-   *  then place Red points everywhere on 'b' letter,
-   *  then place Black points everywhere on 'B' letter,
-   *  etc...
+
+  test("simple surround") {
+    val field = constructField(
+      """
+      .a.
+      cBa
+      .a.
+      """)
+    assert(field.scoreRed == 1)
+    assert(field.scoreBlack == 0)
+  }
+
+  test("surround empty territory") {
+    val field = constructField(
+      """
+      .a.
+      a.a
+      .a.
+      """)
+    assert(field.scoreRed == 0)
+    assert(field.scoreBlack == 0)
+    assert(field.isPuttingAllowed(Pos(2, 2)))
+    assert(!field.isPuttingAllowed(Pos(1, 2)))
+    assert(!field.isPuttingAllowed(Pos(2, 1)))
+    assert(!field.isPuttingAllowed(Pos(2, 3)))
+  }
+
+  test("double surround") {
+    val field = constructField(
+      """
+      .b.b..
+      bAzAb.
+      .b.b..
+      """)
+    assert(field.scoreRed == 2)
+    assert(field.scoreBlack == 0)
+    // commented out for investigation to "kurnevsky".
+    // assert(field.surroundChains.size == 2)
+  }
+
+  test("should leave empty inside") {
+    val field = constructField(
+      """
+        .aaaa..
+        a....a.
+        a.b...a
+        .z.bC.a
+        a.b...a
+        a....a.
+        .aaaa..
+      """
+    )
+    assert(field.scoreRed == 1)
+    assert(field.scoreBlack == 0)
+
+    assert(field.isPuttingAllowed(Pos(3, 4)))
+
+    assert(!field.isPuttingAllowed(Pos(3, 5)))
+    assert(!field.isPuttingAllowed(Pos(3, 3)))
+    assert(!field.isPuttingAllowed(Pos(2, 4)))
+    assert(!field.isPuttingAllowed(Pos(4, 4)))
+
+    assert(!field.isPuttingAllowed(Pos(2, 2)))
+  }
+
+  /** Every letter means a dot that should be placed on the field.
+   *  Lower-cases are always Red, upper-cases are always Black.
+   *  Order by which appropriate points are placed:
+   *  all 'a' points (Red), all 'A' points (Black),
+   *  all 'b' points (Red), all 'B' points (Black), etc...
    */
   def constructMoveList(image: Vector[String]) = {
     (for {
@@ -26,50 +91,13 @@ class TestWithImages extends FunSuite with DiagrammedAssertions {
 
   def constructField(image: String) = {
     val lines = image.stripMargin.lines.toVector.map(_.trim).filter(_.nonEmpty)
+    assert(lines.groupBy(_.length).size == 1, "lines must have equal length")
+
     constructMoveList(lines).foldLeft {
       Field(lines.head.length + 1, lines.size + 1)
     } {
       case (field, newPos) => field.putPoint(newPos.pos, newPos.player)
     }
-  }
-
-  test("simple surround") {
-    val field = constructField(
-      """
-      .a.
-      cBa
-      .a.
-      """)
-    assert(field.scoreBlack == 0)
-    assert(field.scoreRed == 1)
-  }
-
-  test("surround empty territory") {
-    val field = constructField(
-      """
-      .a.
-      a.a
-      .a.
-      """)
-    assert(field.scoreBlack == 0)
-    assert(field.scoreRed == 0)
-    assert(field.isPuttingAllowed(Pos(2, 2)))
-    assert(!field.isPuttingAllowed(Pos(1, 2)))
-    assert(!field.isPuttingAllowed(Pos(2, 1)))
-    assert(!field.isPuttingAllowed(Pos(2, 3)))
-  }
-
-  test("double surround") {
-    val field = constructField(
-      """
-      .b.b..
-      bAzAb.
-      .b.b..
-      """)
-    assert(field.scoreBlack == 0)
-    assert(field.scoreRed == 2)
-    // commented out for investigation to "kurnevsky".
-    // assert(field.surroundChains.size == 2)
   }
 
 }
