@@ -56,8 +56,7 @@ class TestWithImages extends FunSuite with DiagrammedAssertions {
     assert(field.scoreRed == 2)
     assert(field.scoreBlack == 0)
 
-    // investigation by "kurnevsky" required
-    assert(field.surroundChains.size == 2)
+    assert(field.surroundChain.map(_._1.size) == Some(8))
   }
 
   test("double surround with empty part") {

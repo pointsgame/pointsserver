@@ -2,14 +2,14 @@ package net.pointsgame.paper_engine
 
 import scala.annotation.tailrec
 
-final case class Field(vector: Vector2D[PosValue], scoreRed: Int, scoreBlack: Int, moves: List[PosPlayer], surroundChains: List[(List[Pos], Player)]) {
+final class Field(vector: Vector2D[PosValue], val scoreRed: Int, val scoreBlack: Int, val moves: List[PosPlayer], val surroundChain: Option[(List[Pos], Player)]) {
   def width: Int =
     vector.width
   def height: Int =
     vector.height
   def lastPlayer: Option[Player] =
     moves.headOption.map(_.player)
-  def apply(pos: Pos): PosValue =
+  private def apply(pos: Pos): PosValue =
     vector(pos.x, pos.y)
   def isInField(pos: Pos): Boolean =
     pos.x >= 0 && pos.x < width && pos.y >= 0 && pos.y < height
@@ -18,7 +18,7 @@ final case class Field(vector: Vector2D[PosValue], scoreRed: Int, scoreBlack: In
   /** Returns `true` if the player controls the Pos (same color or has surrounded the Pos) */
   def isPlayersPoint(pos: Pos, player: Player): Boolean =
     isInField(pos) && apply(pos).isPlayer(player)
-  def getFirstNextPos(centerPos: Pos, pos: Pos): Pos = (pos.dx(centerPos), pos.dy(centerPos)) match {
+  private def getFirstNextPos(centerPos: Pos, pos: Pos): Pos = (pos.dx(centerPos), pos.dy(centerPos)) match {
     case (-1, -1) => centerPos.se
     case (0, -1)  => centerPos.ne
     case (1, -1)  => centerPos.ne
@@ -30,7 +30,7 @@ final case class Field(vector: Vector2D[PosValue], scoreRed: Int, scoreBlack: In
     case (1, 1)   => centerPos.nw
     case _        => throw new IllegalArgumentException(s"getFirstNextPos: not adjacent points: $centerPos and $pos.")
   }
-  def getNextPos(centerPos: Pos, pos: Pos): Pos = (pos.dx(centerPos), pos.dy(centerPos)) match {
+  private def getNextPos(centerPos: Pos, pos: Pos): Pos = (pos.dx(centerPos), pos.dy(centerPos)) match {
     case (-1, -1) => pos.e
     case (0, -1)  => pos.e
     case (1, -1)  => pos.n
@@ -42,9 +42,9 @@ final case class Field(vector: Vector2D[PosValue], scoreRed: Int, scoreBlack: In
     case (1, 1)   => pos.w
     case _        => throw new IllegalArgumentException(s"getNextPos: not adjacent points: $centerPos and $pos.")
   }
-  def fiberBundle(pos1: Pos, pos2: Pos): Int =
+  private def fiberBundle(pos1: Pos, pos2: Pos): Int =
     pos1.x * pos2.y - pos2.x * pos1.y
-  def square(chain: List[Pos]): Int = {
+  private def square(chain: List[Pos]): Int = {
     @tailrec
     def _square(l: List[Pos], acc: Int): Int = l match {
       case List(a) => acc + fiberBundle(a, chain.head)
@@ -53,7 +53,7 @@ final case class Field(vector: Vector2D[PosValue], scoreRed: Int, scoreBlack: In
     }
     _square(chain, 0)
   }
-  def buildChain(startPos: Pos, nextPos: Pos, player: Player): Option[List[Pos]] = {
+  private def buildChain(startPos: Pos, nextPos: Pos, player: Player): Option[List[Pos]] = {
     @tailrec
     def getNextPlayerPos(centerPos: Pos, pos: Pos): Pos =
       if (pos == startPos)
@@ -79,7 +79,7 @@ final case class Field(vector: Vector2D[PosValue], scoreRed: Int, scoreBlack: In
     else
       None
   }
-  def getInputPoints(pos: Pos, player: Player): List[(Pos, Pos)] = {
+  private def getInputPoints(pos: Pos, player: Player): List[(Pos, Pos)] = {
     val list1 =
       if (!isPlayersPoint(pos.w, player)) {
         if (isPlayersPoint(pos.sw, player))
@@ -126,7 +126,7 @@ final case class Field(vector: Vector2D[PosValue], scoreRed: Int, scoreBlack: In
       }
     list4
   }
-  def isPosInsideRing(pos: Pos, ring: List[Pos]): Boolean = {
+  private def isPosInsideRing(pos: Pos, ring: List[Pos]): Boolean = {
     def removeNearSame(list: List[Int]): List[Int] =
       list.foldRight(List(list.last))((a, acc) => if (acc.head == a) acc else a :: acc)
     val _ring = removeNearSame(ring.filter(_.x <= pos.x).map(_.y))
@@ -154,11 +154,11 @@ final case class Field(vector: Vector2D[PosValue], scoreRed: Int, scoreBlack: In
         _wave(passed.union(front), nextFront(passed, front))
     _wave(Set.empty, Set(startPos))
   }
-  def getInsideRing(startPos: Pos, ring: List[Pos]): List[Pos] = {
+  private def getInsideRing(startPos: Pos, ring: List[Pos]): List[Pos] = {
     val ringSet = ring.toSet
     wave(startPos, !ringSet.contains(_))
   }
-  def getEmptyBase(startPos: Pos, player: Player): (List[Pos], List[Pos]) = {
+  private def getEmptyBase(startPos: Pos, player: Player): (List[Pos], List[Pos]) = {
     @tailrec
     def getEmptyBaseChain(pos: Pos): List[Pos] =
       if (!isPlayersPoint(pos, player)) {
@@ -179,7 +179,7 @@ final case class Field(vector: Vector2D[PosValue], scoreRed: Int, scoreBlack: In
     val enemy = player.next
     val value = apply(pos)
     if (value.isEmptyBase(player)) {
-      Field(vector.updated(pos.x, pos.y, PlayerPosValue(player)), scoreRed, scoreBlack, PosPlayer(pos, player) :: moves, (Nil, player) :: surroundChains)
+      new Field(vector.updated(pos.x, pos.y, PlayerPosValue(player)), scoreRed, scoreBlack, PosPlayer(pos, player) :: moves, None)
     } else {
       val captures = getInputPoints(pos, player).flatMap {
         case (chainPos, capturedPos) =>
@@ -201,12 +201,12 @@ final case class Field(vector: Vector2D[PosValue], scoreRed: Int, scoreBlack: In
           val updatedVector1 = enemyEmptyBase.foldLeft(vector)((acc, p) => acc.updated(p.x, p.y, EmptyPosValue))
           val updatedVector2 = updatedVector1.updated(pos.x, pos.y, PlayerPosValue(player))
           val updatedVector3 = realCaptured.foldLeft(updatedVector2)((acc, p) => acc.updated(p.x, p.y, PlayerPosValue(player)))
-          Field(updatedVector3, newScoreRed, newScoreBlack, PosPlayer(pos, player) :: moves, (captureChain, player) :: surroundChains)
+          new Field(updatedVector3, newScoreRed, newScoreBlack, PosPlayer(pos, player) :: moves, Some(captureChain -> player))
         } else {
           val newScoreRed = if (player == Player.Red) scoreRed - 1 else scoreRed
           val newScoreBlack = if (player == Player.Black) scoreBlack - 1 else scoreBlack
           val updatedVector = enemyEmptyBase.foldLeft(vector)((acc, p) => acc.updated(p.x, p.y, PlayerPosValue(enemy)))
-          Field(updatedVector, newScoreRed, newScoreBlack, PosPlayer(pos, player) :: moves, (enemyEmptyBaseChain, enemy) :: surroundChains)
+          new Field(updatedVector, newScoreRed, newScoreBlack, PosPlayer(pos, player) :: moves, Some(enemyEmptyBaseChain -> enemy))
         }
       } else {
         val newEmptyBase = emptyCaptures.flatMap(_._2)
@@ -215,7 +215,7 @@ final case class Field(vector: Vector2D[PosValue], scoreRed: Int, scoreBlack: In
         val updatedVector1 = vector.updated(pos.x, pos.y, PlayerPosValue(player))
         val updatedVector2 = realCaptured.foldLeft(updatedVector1)((acc, p) => acc.updated(p.x, p.y, PlayerPosValue(player)))
         val updatedVector3 = newEmptyBase.foldLeft(updatedVector2)((acc, p) => acc.updated(p.x, p.y, EmptyBasePosValue(player)))
-        Field(updatedVector3, newScoreRed, newScoreBlack, PosPlayer(pos, player) :: moves, (captureChain, player) :: surroundChains)
+        new Field(updatedVector3, newScoreRed, newScoreBlack, PosPlayer(pos, player) :: moves, if (captureChain.isEmpty) None else Some(captureChain -> player))
       }
     }
   }
@@ -225,5 +225,5 @@ final case class Field(vector: Vector2D[PosValue], scoreRed: Int, scoreBlack: In
 
 object Field extends ((Int, Int) => Field) {
   def apply(width: Int, height: Int): Field =
-    Field(Vector2D.fill(width, height)(EmptyPosValue), 0, 0, Nil, Nil)
+    new Field(Vector2D.fill(width, height)(EmptyPosValue), 0, 0, Nil, None)
 }
