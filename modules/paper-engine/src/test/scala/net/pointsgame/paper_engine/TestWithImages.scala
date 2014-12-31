@@ -80,7 +80,7 @@ class TestWithImages extends FunSuite with DiagrammedAssertions {
     assert(!field.isPuttingAllowed(Pos(4, 2)))
   }
 
-  test("should leave empty inside") {
+  test("should not leave empty inside") {
     val (field, surroundings) = constructField(
       """
         .aaaa..
@@ -96,7 +96,7 @@ class TestWithImages extends FunSuite with DiagrammedAssertions {
     assert(field.scoreBlack == 0)
     assert(surroundings.size == 1)
 
-    assert(field.isPuttingAllowed(Pos(3, 4)))
+    assert(!field.isPuttingAllowed(Pos(3, 4)))
 
     assert(!field.isPuttingAllowed(Pos(3, 5)))
     assert(!field.isPuttingAllowed(Pos(3, 3)))

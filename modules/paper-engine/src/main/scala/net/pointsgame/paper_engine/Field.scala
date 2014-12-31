@@ -3,7 +3,7 @@ package net.pointsgame.paper_engine
 import scala.annotation.tailrec
 
 final class Field private (
-  private val vector: Vector2D[PosValue],
+    private val vector: Vector2D[PosValue],
     val scoreRed: Int,
     val scoreBlack: Int,
     val moves: List[ColoredPos],
@@ -219,8 +219,8 @@ final class Field private (
         val newScoreRed = if (player == Player.Red) scoreRed + deltaScore else scoreRed
         val newScoreBlack = if (player == Player.Black) scoreBlack + deltaScore else scoreBlack
         val updatedVector1 = vector.updated(pos.x, pos.y, PlayerPosValue(player))
-        val updatedVector2 = realCaptured.foldLeft(updatedVector1)((acc, p) => acc.updated(p.x, p.y, PlayerPosValue(player)))
-        val updatedVector3 = newEmptyBase.foldLeft(updatedVector2)((acc, p) => acc.updated(p.x, p.y, EmptyBasePosValue(player)))
+        val updatedVector2 = newEmptyBase.foldLeft(updatedVector1)((acc, p) => acc.updated(p.x, p.y, EmptyBasePosValue(player)))
+        val updatedVector3 = realCaptured.foldLeft(updatedVector2)((acc, p) => acc.updated(p.x, p.y, PlayerPosValue(player)))
         new Field(updatedVector3, newScoreRed, newScoreBlack, ColoredPos(pos, player) :: moves, if (captureChain.isEmpty) None else Some(ColoredChain(captureChain, player)))
       }
     }
