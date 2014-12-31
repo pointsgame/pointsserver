@@ -4,7 +4,6 @@ import org.scalatest.{ DiagrammedAssertions, FunSuite }
 
 class TestWithImages extends FunSuite with DiagrammedAssertions {
 
-
   test("simple surround") {
     val field = constructField(
       """
@@ -31,6 +30,18 @@ class TestWithImages extends FunSuite with DiagrammedAssertions {
     assert(!field.isPuttingAllowed(Pos(2, 3)))
   }
 
+  test("apply 'control' surrounding in same turn") {
+    val field = constructField(
+      """
+      .a.
+      aBa
+      .ac
+      """)
+    // investigation by "kurnevsky" required
+    assert(field.scoreRed == 1)
+    assert(field.scoreBlack == 0)
+  }
+
   test("double surround") {
     val field = constructField(
       """
@@ -40,8 +51,22 @@ class TestWithImages extends FunSuite with DiagrammedAssertions {
       """)
     assert(field.scoreRed == 2)
     assert(field.scoreBlack == 0)
-    // commented out for investigation to "kurnevsky".
-    // assert(field.surroundChains.size == 2)
+
+    // investigation by "kurnevsky" required
+    assert(field.surroundChains.size == 2)
+  }
+
+  test("double surround with empty part") {
+    val field = constructField(
+      """
+      .b.b..
+      b.zAb.
+      .b.b..
+      """)
+    assert(field.scoreRed == 1)
+    assert(field.scoreBlack == 0)
+    assert(field.isPuttingAllowed(Pos(2, 2)))
+    assert(!field.isPuttingAllowed(Pos(4, 2)))
   }
 
   test("should leave empty inside") {
