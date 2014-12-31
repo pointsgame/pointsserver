@@ -2,7 +2,13 @@ package net.pointsgame.paper_engine
 
 import scala.annotation.tailrec
 
-final class Field(private val vector: Vector2D[PosValue], val scoreRed: Int, val scoreBlack: Int, val moves: List[ColoredPos], val lastSurroundChain: Option[ColoredChain]) {
+final class Field private (
+  private val vector: Vector2D[PosValue],
+    val scoreRed: Int,
+    val scoreBlack: Int,
+    val moves: List[ColoredPos],
+    val lastSurroundChain: Option[ColoredChain]
+) {
   def width: Int =
     vector.width
   def height: Int =
