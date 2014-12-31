@@ -203,8 +203,8 @@ final class Field(vector: Vector2D[PosValue], val scoreRed: Int, val scoreBlack:
           val updatedVector3 = realCaptured.foldLeft(updatedVector2)((acc, p) => acc.updated(p.x, p.y, PlayerPosValue(player)))
           new Field(updatedVector3, newScoreRed, newScoreBlack, ColoredPos(pos, player) :: moves, Some(ColoredChain(captureChain, player)))
         } else {
-          val newScoreRed = if (player == Player.Red) scoreRed - 1 else scoreRed
-          val newScoreBlack = if (player == Player.Black) scoreBlack - 1 else scoreBlack
+          val newScoreRed = if (player == Player.Red) scoreRed else scoreRed + 1
+          val newScoreBlack = if (player == Player.Black) scoreBlack else scoreBlack + 1
           val updatedVector = enemyEmptyBase.foldLeft(vector)((acc, p) => acc.updated(p.x, p.y, PlayerPosValue(enemy)))
           new Field(updatedVector, newScoreRed, newScoreBlack, ColoredPos(pos, player) :: moves, Some(ColoredChain(enemyEmptyBaseChain, enemy)))
         }
