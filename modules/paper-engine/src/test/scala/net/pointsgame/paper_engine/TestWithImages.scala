@@ -10,7 +10,8 @@ class TestWithImages extends FunSuite with DiagrammedAssertions {
       .a.
       cBa
       .a.
-      """)
+      """
+    )
     assert(field.scoreRed == 1)
     assert(field.scoreBlack == 0)
   }
@@ -21,7 +22,8 @@ class TestWithImages extends FunSuite with DiagrammedAssertions {
       .a.
       a.a
       .a.
-      """)
+      """
+    )
     assert(field.scoreRed == 0)
     assert(field.scoreBlack == 0)
     assert(field.isPuttingAllowed(Pos(2, 2)))
@@ -36,7 +38,8 @@ class TestWithImages extends FunSuite with DiagrammedAssertions {
       .a.
       aBa
       .ac
-      """)
+      """
+    )
     // investigation by "kurnevsky" required
     assert(field.scoreRed == 1)
     assert(field.scoreBlack == 0)
@@ -48,7 +51,8 @@ class TestWithImages extends FunSuite with DiagrammedAssertions {
       .b.b..
       bAzAb.
       .b.b..
-      """)
+      """
+    )
     assert(field.scoreRed == 2)
     assert(field.scoreBlack == 0)
 
@@ -62,7 +66,8 @@ class TestWithImages extends FunSuite with DiagrammedAssertions {
       .b.b..
       b.zAb.
       .b.b..
-      """)
+      """
+    )
     assert(field.scoreRed == 1)
     assert(field.scoreBlack == 0)
     assert(field.isPuttingAllowed(Pos(2, 2)))
@@ -106,9 +111,9 @@ class TestWithImages extends FunSuite with DiagrammedAssertions {
       (char, x) <- line.zipWithIndex
       if char.toLower != char.toUpper
     } yield {
-      Tuple2(char, Pos(x + 1, y + 1))
+      char -> Pos(x + 1, y + 1)
     }).sortBy {
-      case (char, pos) => char.toLower -> char.isLower
+      case (char, _) => char.toLower -> char.isLower
     }.map {
       case (char, pos) => PosPlayer(pos, if (char.isLower) Player.Red else Player.Black)
     }
