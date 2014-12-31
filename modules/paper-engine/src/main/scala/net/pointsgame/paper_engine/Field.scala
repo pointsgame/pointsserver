@@ -221,6 +221,15 @@ final class Field(vector: Vector2D[PosValue], val scoreRed: Int, val scoreBlack:
   }
   def putPoint(pos: Pos): Field =
     putPoint(pos, lastPlayer.getOrElse(Player.Red))
+  override def equals(o: Any) = o match {
+    case that: Field =>
+      that.vector == vector &&
+        that.scoreRed == scoreRed &&
+        that.scoreBlack == scoreBlack &&
+        that.moves == moves &&
+        that.surroundChain == surroundChain
+    case _ => false
+  }
 }
 
 object Field extends ((Int, Int) => Field) {
