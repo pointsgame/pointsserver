@@ -5,7 +5,7 @@ import org.scalatest.{ DiagrammedAssertions, FunSuite }
 class TestWithImages extends FunSuite with DiagrammedAssertions {
 
   test("simple surround") {
-    val field = constructField(
+    val (field, surroundings) = constructField(
       """
       .a.
       cBa
@@ -14,10 +14,11 @@ class TestWithImages extends FunSuite with DiagrammedAssertions {
     )
     assert(field.scoreRed == 1)
     assert(field.scoreBlack == 0)
+    assert(surroundings.size == 1)
   }
 
   test("surround empty territory") {
-    val field = constructField(
+    val (field, surroundings) = constructField(
       """
       .a.
       a.a
@@ -26,6 +27,7 @@ class TestWithImages extends FunSuite with DiagrammedAssertions {
     )
     assert(field.scoreRed == 0)
     assert(field.scoreBlack == 0)
+    assert(surroundings.size == 0)
     assert(field.isPuttingAllowed(Pos(2, 2)))
     assert(!field.isPuttingAllowed(Pos(1, 2)))
     assert(!field.isPuttingAllowed(Pos(2, 1)))
@@ -33,7 +35,7 @@ class TestWithImages extends FunSuite with DiagrammedAssertions {
   }
 
   test("apply 'control' surrounding in same turn") {
-    val field = constructField(
+    val (field, surroundings) = constructField(
       """
       .a.
       aBa
@@ -42,10 +44,11 @@ class TestWithImages extends FunSuite with DiagrammedAssertions {
     )
     assert(field.scoreRed == 1)
     assert(field.scoreBlack == 0)
+    assert(surroundings.size == 1)
   }
 
   test("double surround") {
-    val field = constructField(
+    val (field, surroundings) = constructField(
       """
       .b.b..
       bAzAb.
@@ -55,11 +58,15 @@ class TestWithImages extends FunSuite with DiagrammedAssertions {
     assert(field.scoreRed == 2)
     assert(field.scoreBlack == 0)
 
-    assert(field.surroundChain.map(_.chain.size) == Some(8))
+    // These assertions rely on `Field` conventions.
+    // We assume there can be exactly one surrounding per turn
+    // (but the surrounding may seem like two separate surroundings on GUI).
+    assert(field.lastSurroundChain.map(_.chain.size) == Some(8))
+    assert(surroundings.size == 1)
   }
 
   test("double surround with empty part") {
-    val field = constructField(
+    val (field, surroundings) = constructField(
       """
       .b.b..
       b.zAb.
@@ -68,12 +75,13 @@ class TestWithImages extends FunSuite with DiagrammedAssertions {
     )
     assert(field.scoreRed == 1)
     assert(field.scoreBlack == 0)
+    assert(surroundings.size == 1)
     assert(field.isPuttingAllowed(Pos(2, 2)))
     assert(!field.isPuttingAllowed(Pos(4, 2)))
   }
 
   test("should leave empty inside") {
-    val field = constructField(
+    val (field, surroundings) = constructField(
       """
         .aaaa..
         a....a.
@@ -86,6 +94,7 @@ class TestWithImages extends FunSuite with DiagrammedAssertions {
     )
     assert(field.scoreRed == 1)
     assert(field.scoreBlack == 0)
+    assert(surroundings.size == 1)
 
     assert(field.isPuttingAllowed(Pos(3, 4)))
 
@@ -119,12 +128,14 @@ class TestWithImages extends FunSuite with DiagrammedAssertions {
 
   def constructField(image: String) = {
     val lines = image.stripMargin.lines.toVector.map(_.trim).filter(_.nonEmpty)
-    assert(lines.groupBy(_.length).size == 1, "lines must have equal length")
+    require(lines.groupBy(_.length).size == 1, "lines must have equal length")
 
     constructMoveList(lines).foldLeft {
-      Field(lines.head.length + 1, lines.size + 1)
+      Field(lines.head.length + 1, lines.size + 1) -> Vector.empty[ColoredChain]
     } {
-      case (field, newPos) => field.putPoint(newPos.pos, newPos.player)
+      case ((field, surroundings), newPos) =>
+        val newField = field.putPoint(newPos.pos, newPos.player)
+        newField -> (surroundings ++ newField.lastSurroundChain)
     }
   }
 
