@@ -40,7 +40,6 @@ class TestWithImages extends FunSuite with DiagrammedAssertions {
       .a.
       """
     )
-    // investigation by "kurnevsky" required
     assert(field.scoreRed == 1)
     assert(field.scoreBlack == 0)
   }
