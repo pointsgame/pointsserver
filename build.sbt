@@ -21,6 +21,7 @@ val commonSettings = scalariformSettings ++ Seq(
   ),
   ScalariformKeys.preferences := ScalariformKeys.preferences.value
     .setPreference(DoubleIndentClassDeclaration, true)
+    .setPreference(MultilineScaladocCommentsStartOnFirstLine, true)
     .setPreference(AlignSingleLineCaseStatements, true),
   libraryDependencies ++= Seq(
     scalatest,
@@ -30,11 +31,16 @@ val commonSettings = scalariformSettings ++ Seq(
   )
 )
 
-lazy val pointsEngine = project.in(file("./modules/points-engine"))
+lazy val paperEngine = project.in(file("./modules/paper-engine"))
   .settings(commonSettings: _*)
-  .settings(name := "points-engine")
+  .settings(name := "paper-engine")
 
 lazy val akkaNetwork = project.in(file("./modules/akka-network"))
   .settings(commonSettings: _*)
   .settings(name := "akka-network")
   .settings(libraryDependencies += akkaLib)
+
+// dummy module to aggregate other modules
+lazy val root = project.in(file("."))
+  .settings(commonSettings: _*)
+  .aggregate(paperEngine, akkaNetwork)
