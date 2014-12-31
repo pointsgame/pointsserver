@@ -221,7 +221,7 @@ final class Field(private val vector: Vector2D[PosValue], val scoreRed: Int, val
   }
   def putPoint(pos: Pos): Field =
     putPoint(pos, lastPlayer.getOrElse(Player.Red))
-  override def equals(o: Any) = o match {
+  override def equals(o: Any): Boolean = o match {
     case that: Field =>
       that.vector == vector &&
         that.scoreRed == scoreRed &&
@@ -229,6 +229,15 @@ final class Field(private val vector: Vector2D[PosValue], val scoreRed: Int, val
         that.moves == moves &&
         that.surroundChain == surroundChain
     case _ => false
+  }
+  override def hashCode: Int = {
+    val n = 7
+    val h1 = vector.hashCode
+    val h2 = h1 * n + scoreRed.hashCode
+    val h3 = h2 * n + scoreBlack.hashCode
+    val h4 = h3 * n + moves.hashCode
+    val h5 = h4 * n + surroundChain.hashCode
+    h5
   }
 }
 
