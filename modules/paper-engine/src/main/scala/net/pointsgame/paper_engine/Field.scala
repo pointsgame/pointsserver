@@ -236,7 +236,7 @@ final class Field(private val vector: Vector2D[PosValue], val scoreRed: Int, val
     val h2 = h1 * n + scoreRed.hashCode
     val h3 = h2 * n + scoreBlack.hashCode
     val h4 = h3 * n + moves.hashCode
-    val h5 = h4 * n + surroundChain.hashCode
+    val h5 = h4 * n + lastSurroundChain.hashCode
     h5
   }
 }
