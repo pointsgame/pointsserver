@@ -114,7 +114,7 @@ class TestWithImages extends FunSuite with DiagrammedAssertions {
     }).sortBy {
       case (char, _) => char.toLower -> char.isLower
     }.map {
-      case (char, pos) => ColoredPos(pos, if (char.isLower) Player.Red else Player.Black)
+      case (char, pos) => ColoredPos(pos, Player(char.isLower))
     }
   }
 
