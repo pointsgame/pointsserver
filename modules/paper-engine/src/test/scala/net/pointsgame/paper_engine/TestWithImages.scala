@@ -35,7 +35,7 @@ class TestWithImages extends FunSuite with DiagrammedAssertions {
       """
       .a.
       aBa
-      .ac
+      .a.
       """)
     // investigation by "kurnevsky" required
     assert(field.scoreRed == 1)
