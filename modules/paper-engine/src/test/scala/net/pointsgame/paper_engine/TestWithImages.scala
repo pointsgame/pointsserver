@@ -56,7 +56,7 @@ class TestWithImages extends FunSuite with DiagrammedAssertions {
     assert(field.scoreRed == 2)
     assert(field.scoreBlack == 0)
 
-    assert(field.surroundChain.map(_._1.size) == Some(8))
+    assert(field.surroundChain.map(_.chain.size) == Some(8))
   }
 
   test("double surround with empty part") {
@@ -114,7 +114,7 @@ class TestWithImages extends FunSuite with DiagrammedAssertions {
     }).sortBy {
       case (char, _) => char.toLower -> char.isLower
     }.map {
-      case (char, pos) => PosPlayer(pos, if (char.isLower) Player.Red else Player.Black)
+      case (char, pos) => ColoredPos(pos, if (char.isLower) Player.Red else Player.Black)
     }
   }
 

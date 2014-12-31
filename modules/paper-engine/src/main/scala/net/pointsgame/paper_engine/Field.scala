@@ -2,7 +2,7 @@ package net.pointsgame.paper_engine
 
 import scala.annotation.tailrec
 
-final class Field(vector: Vector2D[PosValue], val scoreRed: Int, val scoreBlack: Int, val moves: List[PosPlayer], val surroundChain: Option[(List[Pos], Player)]) {
+final class Field(vector: Vector2D[PosValue], val scoreRed: Int, val scoreBlack: Int, val moves: List[ColoredPos], val surroundChain: Option[ColoredChain]) {
   def width: Int =
     vector.width
   def height: Int =
@@ -179,7 +179,7 @@ final class Field(vector: Vector2D[PosValue], val scoreRed: Int, val scoreBlack:
     val enemy = player.next
     val value = apply(pos)
     if (value.isEmptyBase(player)) {
-      new Field(vector.updated(pos.x, pos.y, PlayerPosValue(player)), scoreRed, scoreBlack, PosPlayer(pos, player) :: moves, None)
+      new Field(vector.updated(pos.x, pos.y, PlayerPosValue(player)), scoreRed, scoreBlack, ColoredPos(pos, player) :: moves, None)
     } else {
       val captures = getInputPoints(pos, player).flatMap {
         case (chainPos, capturedPos) =>
@@ -201,12 +201,12 @@ final class Field(vector: Vector2D[PosValue], val scoreRed: Int, val scoreBlack:
           val updatedVector1 = enemyEmptyBase.foldLeft(vector)((acc, p) => acc.updated(p.x, p.y, EmptyPosValue))
           val updatedVector2 = updatedVector1.updated(pos.x, pos.y, PlayerPosValue(player))
           val updatedVector3 = realCaptured.foldLeft(updatedVector2)((acc, p) => acc.updated(p.x, p.y, PlayerPosValue(player)))
-          new Field(updatedVector3, newScoreRed, newScoreBlack, PosPlayer(pos, player) :: moves, Some(captureChain -> player))
+          new Field(updatedVector3, newScoreRed, newScoreBlack, ColoredPos(pos, player) :: moves, Some(ColoredChain(captureChain, player)))
         } else {
           val newScoreRed = if (player == Player.Red) scoreRed - 1 else scoreRed
           val newScoreBlack = if (player == Player.Black) scoreBlack - 1 else scoreBlack
           val updatedVector = enemyEmptyBase.foldLeft(vector)((acc, p) => acc.updated(p.x, p.y, PlayerPosValue(enemy)))
-          new Field(updatedVector, newScoreRed, newScoreBlack, PosPlayer(pos, player) :: moves, Some(enemyEmptyBaseChain -> enemy))
+          new Field(updatedVector, newScoreRed, newScoreBlack, ColoredPos(pos, player) :: moves, Some(ColoredChain(enemyEmptyBaseChain, enemy)))
         }
       } else {
         val newEmptyBase = emptyCaptures.flatMap(_._2)
@@ -215,7 +215,7 @@ final class Field(vector: Vector2D[PosValue], val scoreRed: Int, val scoreBlack:
         val updatedVector1 = vector.updated(pos.x, pos.y, PlayerPosValue(player))
         val updatedVector2 = realCaptured.foldLeft(updatedVector1)((acc, p) => acc.updated(p.x, p.y, PlayerPosValue(player)))
         val updatedVector3 = newEmptyBase.foldLeft(updatedVector2)((acc, p) => acc.updated(p.x, p.y, EmptyBasePosValue(player)))
-        new Field(updatedVector3, newScoreRed, newScoreBlack, PosPlayer(pos, player) :: moves, if (captureChain.isEmpty) None else Some(captureChain -> player))
+        new Field(updatedVector3, newScoreRed, newScoreBlack, ColoredPos(pos, player) :: moves, if (captureChain.isEmpty) None else Some(ColoredChain(captureChain, player)))
       }
     }
   }
