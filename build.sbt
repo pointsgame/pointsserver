@@ -14,7 +14,6 @@ val commonSettings = scalariformSettings ++ Seq(
     "-unchecked",
     "-deprecation",
     "-feature",
-    "-optimise",
     "-encoding", "utf8",
     "-Xfuture",
     "-Xlint"
