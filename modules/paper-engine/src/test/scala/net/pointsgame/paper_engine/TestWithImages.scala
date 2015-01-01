@@ -117,7 +117,7 @@ class TestWithImages extends FunSuite with DiagrammedAssertions {
       .c..a..c.
       ..c...c..
       ...cBc...
-      ....D....
+      ....d....
       """
     )
     assert(field.scoreRed == 1)
@@ -146,6 +146,32 @@ class TestWithImages extends FunSuite with DiagrammedAssertions {
     assert(surroundings.size == 1)
     assert(!field.isPuttingAllowed(Pos(5, 5)))
     assert(!field.isPuttingAllowed(Pos(5, 2)))
+  }
+
+  test("surrounding does not expand") {
+    val (field, surroundings) = constructField(
+      """
+      ....a....
+      ...a.a...
+      ..a.a.a..
+      .a.a.a.a.
+      a.a.aBa.a
+      .a.a.a.a.
+      ..a.a.a..
+      ...a.a...
+      ....a....
+      """
+    )
+    assert(field.scoreRed == 1)
+    assert(field.scoreBlack == 0)
+    assert(surroundings.size == 1)
+
+    assert(field.isPuttingAllowed(Pos(7, 4)))
+    assert(field.isPuttingAllowed(Pos(5, 4)))
+    assert(field.isPuttingAllowed(Pos(5, 6)))
+    assert(field.isPuttingAllowed(Pos(7, 6)))
+
+    assert(!field.isPuttingAllowed(Pos(6, 5)))
   }
 
   /** Every letter means a dot that should be placed on the field.
