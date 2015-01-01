@@ -9,6 +9,8 @@ final class Field private (
     val moves: List[ColoredPos],
     val lastSurroundChain: Option[ColoredChain]
 ) {
+  def this(width: Int, height: Int) =
+    this(Vector2D.fill(width, height)(EmptyPosValue), 0, 0, Nil, None)
   def width: Int =
     vector.width
   def height: Int =
@@ -249,5 +251,5 @@ final class Field private (
 
 object Field extends ((Int, Int) => Field) {
   def apply(width: Int, height: Int): Field =
-    new Field(Vector2D.fill(width, height)(EmptyPosValue), 0, 0, Nil, None)
+    new Field(width, height)
 }
