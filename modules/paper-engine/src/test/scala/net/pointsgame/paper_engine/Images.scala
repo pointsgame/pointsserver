@@ -3,6 +3,19 @@ package net.pointsgame.paper_engine
 import org.scalatest.FunSuite
 
 trait Images { self: FunSuite =>
+
+  /** @param size = field size */
+  def rotations(size: Int): List[Pos => Pos] = List[Pos => Pos](
+    { case Pos(x, y) => Pos(x, y) },
+    { case Pos(x, y) => Pos(size - x, y) },
+    { case Pos(x, y) => Pos(x, size - y) },
+    { case Pos(x, y) => Pos(size - x, size - y) },
+    { case Pos(x, y) => Pos(y, x) },
+    { case Pos(x, y) => Pos(size - y, x) },
+    { case Pos(x, y) => Pos(y, size - x) },
+    { case Pos(x, y) => Pos(size - y, size - x) }
+  )
+
   /** Every letter means a dot that should be placed on the field.
    *  Lower-cases are always Red, upper-cases are always Black.
    *  Order by which appropriate points are placed:

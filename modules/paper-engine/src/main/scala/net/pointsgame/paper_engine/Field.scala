@@ -7,8 +7,7 @@ final class Field private (
     val scoreRed: Int,
     val scoreBlack: Int,
     val moves: List[ColoredPos],
-    val lastSurroundChain: Option[ColoredChain]
-) {
+    val lastSurroundChain: Option[ColoredChain]) {
   def this(width: Int, height: Int) =
     this(Vector2D.fill(width, height)(EmptyPosValue), 0, 0, Nil, None)
   def width: Int =
