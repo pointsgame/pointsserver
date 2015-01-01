@@ -23,6 +23,7 @@ val commonSettings = scalariformSettings ++ Seq(
     .setPreference(DoubleIndentClassDeclaration, true)
     .setPreference(MultilineScaladocCommentsStartOnFirstLine, true)
     .setPreference(AlignSingleLineCaseStatements, true),
+  wartremoverWarnings ++= Warts.all,
   libraryDependencies ++= Seq(
     scalatest,
     scalamock,
