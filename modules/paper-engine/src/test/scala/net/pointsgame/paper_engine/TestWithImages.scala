@@ -34,6 +34,48 @@ class TestWithImages extends FunSuite with DiagrammedAssertions {
     assert(!field.isPuttingAllowed(Pos(2, 3)))
   }
 
+  test("move priority") {
+    val (field, surroundings) = constructField(
+      """
+      .aB.
+      aCaB
+      .aB.
+      """
+    )
+    assert(field.scoreRed == 0)
+    assert(field.scoreBlack == 1)
+    assert(surroundings.size == 1)
+  }
+
+  test("move priority, big") {
+    val (field, surroundings) = constructField(
+      """
+      .B..
+      BaB.
+      aCaB
+      .aB.
+      """
+    )
+    assert(field.scoreRed == 0)
+    assert(field.scoreBlack == 2)
+    assert(surroundings.size == 1)
+  }
+
+  test("onion surroundings") {
+    val (field, surroundings) = constructField(
+      """
+      ...c...
+      ..cBc..
+      .cBaBc.
+      ..cBc..
+      ...c...
+      """
+    )
+    assert(field.scoreRed == 4)
+    assert(field.scoreBlack == 0)
+    assert(surroundings.size == 2)
+  }
+
   test("apply 'control' surrounding in same turn") {
     val (field, surroundings) = constructField(
       """
@@ -165,6 +207,8 @@ class TestWithImages extends FunSuite with DiagrammedAssertions {
     assert(field.scoreRed == 1)
     assert(field.scoreBlack == 0)
     assert(surroundings.size == 1)
+
+    assert(field.lastSurroundChain.map(_.chain.size) == Some(4))
 
     assert(field.isPuttingAllowed(Pos(7, 4)))
     assert(field.isPuttingAllowed(Pos(5, 4)))
