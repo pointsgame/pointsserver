@@ -2,253 +2,206 @@ package net.pointsgame.paper_engine
 
 import org.scalatest.{ DiagrammedAssertions, FunSuite }
 
-class TestWithImages extends FunSuite with DiagrammedAssertions {
-
-  test("simple surround") {
-    val (field, surroundings) = constructField(
-      """
-      .a.
-      cBa
-      .a.
-      """
-    )
-    assert(field.scoreRed == 1)
-    assert(field.scoreBlack == 0)
-    assert(surroundings.size == 1)
-  }
-
-  test("surround empty territory") {
-    val (field, surroundings) = constructField(
-      """
-      .a.
-      a.a
-      .a.
-      """
-    )
-    assert(field.scoreRed == 0)
-    assert(field.scoreBlack == 0)
-    assert(surroundings.size == 0)
-    assert(field.isPuttingAllowed(Pos(2, 2)))
-    assert(!field.isPuttingAllowed(Pos(1, 2)))
-    assert(!field.isPuttingAllowed(Pos(2, 1)))
-    assert(!field.isPuttingAllowed(Pos(2, 3)))
-  }
-
-  test("move priority") {
-    val (field, surroundings) = constructField(
-      """
-      .aB.
-      aCaB
-      .aB.
-      """
-    )
-    assert(field.scoreRed == 0)
-    assert(field.scoreBlack == 1)
-    assert(surroundings.size == 1)
-  }
-
-  test("move priority, big") {
-    val (field, surroundings) = constructField(
-      """
-      .B..
-      BaB.
-      aCaB
-      .aB.
-      """
-    )
-    assert(field.scoreRed == 0)
-    assert(field.scoreBlack == 2)
-    assert(surroundings.size == 1)
-  }
-
-  test("onion surroundings") {
-    val (field, surroundings) = constructField(
-      """
-      ...c...
-      ..cBc..
-      .cBaBc.
-      ..cBc..
-      ...c...
-      """
-    )
-    assert(field.scoreRed == 4)
-    assert(field.scoreBlack == 0)
-    assert(surroundings.size == 2)
-  }
-
-  test("apply 'control' surrounding in same turn") {
-    val (field, surroundings) = constructField(
-      """
-      .a.
-      aBa
-      .a.
-      """
-    )
-    assert(field.scoreRed == 1)
-    assert(field.scoreBlack == 0)
-    assert(surroundings.size == 1)
-  }
-
-  test("double surround") {
-    val (field, surroundings) = constructField(
-      """
-      .b.b..
-      bAzAb.
-      .b.b..
-      """
-    )
-    assert(field.scoreRed == 2)
-    assert(field.scoreBlack == 0)
-
-    // These assertions rely on `Field` conventions.
-    // We assume there can be exactly one surrounding per turn
-    // (but the surrounding may seem like two separate surroundings on GUI).
-    assert(field.lastSurroundChain.map(_.chain.size) == Some(8))
-    assert(surroundings.size == 1)
-  }
-
-  test("double surround with empty part") {
-    val (field, surroundings) = constructField(
-      """
-      .b.b..
-      b.zAb.
-      .b.b..
-      """
-    )
-    assert(field.scoreRed == 1)
-    assert(field.scoreBlack == 0)
-    assert(surroundings.size == 1)
-    assert(field.isPuttingAllowed(Pos(2, 2)))
-    assert(!field.isPuttingAllowed(Pos(4, 2)))
-  }
-
-  test("should not leave empty inside") {
-    val (field, surroundings) = constructField(
-      """
-        .aaaa..
-        a....a.
-        a.b...a
-        .z.bC.a
-        a.b...a
-        a....a.
-        .aaaa..
-      """
-    )
-    assert(field.scoreRed == 1)
-    assert(field.scoreBlack == 0)
-    assert(surroundings.size == 1)
-
-    assert(!field.isPuttingAllowed(Pos(3, 4)))
-
-    assert(!field.isPuttingAllowed(Pos(3, 5)))
-    assert(!field.isPuttingAllowed(Pos(3, 3)))
-    assert(!field.isPuttingAllowed(Pos(2, 4)))
-    assert(!field.isPuttingAllowed(Pos(4, 4)))
-
-    assert(!field.isPuttingAllowed(Pos(2, 2)))
-  }
-
-  test("a hole inside a surrounding") {
-    val (field, surroundings) = constructField(
-      """
-      ....c....
-      ...c.c...
-      ..c...c..
-      .c..a..c.
-      c..a.a..c
-      .c..a..c.
-      ..c...c..
-      ...cBc...
-      ....d....
-      """
-    )
-    assert(field.scoreRed == 1)
-    assert(field.scoreBlack == 0)
-    assert(surroundings.size == 1)
-    assert(!field.isPuttingAllowed(Pos(5, 5)))
-    assert(!field.isPuttingAllowed(Pos(5, 2)))
-  }
-
-  test("a hole inside a surrounding, after 'control' surrounding") {
-    val (field, surroundings) = constructField(
-      """
-      ....b....
-      ...b.b...
-      ..b...b..
-      .b..a..b.
-      b..a.a..b
-      .b..a..b.
-      ..b...b..
-      ...bCb...
-      ....b....
-      """
-    )
-    assert(field.scoreRed == 1)
-    assert(field.scoreBlack == 0)
-    assert(surroundings.size == 1)
-    assert(!field.isPuttingAllowed(Pos(5, 5)))
-    assert(!field.isPuttingAllowed(Pos(5, 2)))
-  }
-
-  test("surrounding does not expand") {
-    val (field, surroundings) = constructField(
-      """
-      ....a....
-      ...a.a...
-      ..a.a.a..
-      .a.a.a.a.
-      a.a.aBa.a
-      .a.a.a.a.
-      ..a.a.a..
-      ...a.a...
-      ....a....
-      """
-    )
-    assert(field.scoreRed == 1)
-    assert(field.scoreBlack == 0)
-    assert(surroundings.size == 1)
-
-    assert(field.lastSurroundChain.map(_.chain.size) == Some(4))
-
-    assert(field.isPuttingAllowed(Pos(7, 4)))
-    assert(field.isPuttingAllowed(Pos(5, 4)))
-    assert(field.isPuttingAllowed(Pos(5, 6)))
-    assert(field.isPuttingAllowed(Pos(7, 6)))
-
-    assert(!field.isPuttingAllowed(Pos(6, 5)))
-  }
-
-  /** Every letter means a dot that should be placed on the field.
-   *  Lower-cases are always Red, upper-cases are always Black.
-   *  Order by which appropriate points are placed:
-   *  all 'a' points (Red), all 'A' points (Black),
-   *  all 'b' points (Red), all 'B' points (Black), etc...
-   */
-  def constructMoveList(image: Vector[String]) = {
-    (for {
-      (line, y) <- image.zipWithIndex
-      (char, x) <- line.zipWithIndex
-      if char.toLower != char.toUpper
-    } yield {
-      char -> Pos(x + 1, y + 1)
-    }).sortBy {
-      case (char, _) => char.toLower -> char.isLower
-    }.map {
-      case (char, pos) => ColoredPos(pos, Player(char.isLower))
+class TestWithImages extends FunSuite with DiagrammedAssertions with Images {
+  lastFieldImgTest("simple surround")(
+    """
+    .a.
+    cBa
+    .a.
+    """
+  ) { (field, surroundings) =>
+      assert(field.scoreRed == 1)
+      assert(field.scoreBlack == 0)
+      assert(surroundings.size == 1)
     }
-  }
 
-  def constructField(image: String) = {
-    val lines = image.stripMargin.lines.toVector.map(_.trim).filter(_.nonEmpty)
-    require(lines.groupBy(_.length).size == 1, "lines must have equal length")
-
-    constructMoveList(lines).foldLeft {
-      Field(lines.head.length + 2, lines.size + 2) -> Vector.empty[ColoredChain]
-    } {
-      case ((field, surroundings), newPos) =>
-        val newField = field.putPoint(newPos.pos, newPos.player)
-        newField -> (surroundings ++ newField.lastSurroundChain)
+  lastFieldImgTest("surround empty territory")(
+    """
+    .a.
+    a.a
+    .a.
+    """
+  ) { (field, surroundings) =>
+      assert(field.scoreRed == 0)
+      assert(field.scoreBlack == 0)
+      assert(surroundings.size == 0)
+      assert(field.isPuttingAllowed(Pos(2, 2)))
+      assert(!field.isPuttingAllowed(Pos(1, 2)))
+      assert(!field.isPuttingAllowed(Pos(2, 1)))
+      assert(!field.isPuttingAllowed(Pos(2, 3)))
     }
-  }
 
+  lastFieldImgTest("move priority")(
+    """
+    .aB.
+    aCaB
+    .aB.
+    """
+  ) { (field, surroundings) =>
+      assert(field.scoreRed == 0)
+      assert(field.scoreBlack == 1)
+      assert(surroundings.size == 1)
+    }
+
+  lastFieldImgTest("move priority, big")(
+    """
+    .B..
+    BaB.
+    aCaB
+    .aB.
+    """
+  ) { (field, surroundings) =>
+      assert(field.scoreRed == 0)
+      assert(field.scoreBlack == 2)
+      assert(surroundings.size == 1)
+    }
+
+  lastFieldImgTest("onion surroundings")(
+    """
+    ...c...
+    ..cBc..
+    .cBaBc.
+    ..cBc..
+    ...c...
+    """
+  ) { (field, surroundings) =>
+      assert(field.scoreRed == 4)
+      assert(field.scoreBlack == 0)
+      assert(surroundings.size == 2)
+    }
+
+  lastFieldImgTest("apply 'control' surrounding in same turn")(
+    """
+    .a.
+    aBa
+    .a.
+    """
+  ) { (field, surroundings) =>
+      assert(field.scoreRed == 1)
+      assert(field.scoreBlack == 0)
+      assert(surroundings.size == 1)
+    }
+
+  lastFieldImgTest("double surround")(
+    """
+    .b.b..
+    bAzAb.
+    .b.b..
+    """
+  ) { (field, surroundings) =>
+      assert(field.scoreRed == 2)
+      assert(field.scoreBlack == 0)
+
+      // These assertions rely on `Field` conventions.
+      // We assume there can be exactly one surrounding per turn
+      // (but the surrounding may seem like two separate surroundings on GUI).
+      assert(field.lastSurroundChain.map(_.chain.size) == Some(8))
+      assert(surroundings.size == 1)
+    }
+
+  lastFieldImgTest("double surround with empty part")(
+    """
+    .b.b..
+    b.zAb.
+    .b.b..
+    """
+  ) { (field, surroundings) =>
+      assert(field.scoreRed == 1)
+      assert(field.scoreBlack == 0)
+      assert(surroundings.size == 1)
+      assert(field.isPuttingAllowed(Pos(2, 2)))
+      assert(!field.isPuttingAllowed(Pos(4, 2)))
+    }
+
+  lastFieldImgTest("should not leave empty inside")(
+    """
+    .aaaa..
+    a....a.
+    a.b...a
+    .z.bC.a
+    a.b...a
+    a....a.
+    .aaaa..
+    """
+  ) { (field, surroundings) =>
+      assert(field.scoreRed == 1)
+      assert(field.scoreBlack == 0)
+      assert(surroundings.size == 1)
+
+      assert(!field.isPuttingAllowed(Pos(3, 4)))
+
+      assert(!field.isPuttingAllowed(Pos(3, 5)))
+      assert(!field.isPuttingAllowed(Pos(3, 3)))
+      assert(!field.isPuttingAllowed(Pos(2, 4)))
+      assert(!field.isPuttingAllowed(Pos(4, 4)))
+
+      assert(!field.isPuttingAllowed(Pos(2, 2)))
+    }
+
+  lastFieldImgTest("a hole inside a surrounding")(
+    """
+    ....c....
+    ...c.c...
+    ..c...c..
+    .c..a..c.
+    c..a.a..c
+    .c..a..c.
+    ..c...c..
+    ...cBc...
+    ....d....
+    """
+  ) { (field, surroundings) =>
+      assert(field.scoreRed == 1)
+      assert(field.scoreBlack == 0)
+      assert(surroundings.size == 1)
+      assert(!field.isPuttingAllowed(Pos(5, 5)))
+      assert(!field.isPuttingAllowed(Pos(5, 2)))
+    }
+
+  lastFieldImgTest("a hole inside a surrounding, after 'control' surrounding")(
+    """
+    ....b....
+    ...b.b...
+    ..b...b..
+    .b..a..b.
+    b..a.a..b
+    .b..a..b.
+    ..b...b..
+    ...bCb...
+    ....b....
+    """
+  ) { (field, surroundings) =>
+      assert(field.scoreRed == 1)
+      assert(field.scoreBlack == 0)
+      assert(surroundings.size == 1)
+      assert(!field.isPuttingAllowed(Pos(5, 5)))
+      assert(!field.isPuttingAllowed(Pos(5, 2)))
+    }
+
+  lastFieldImgTest("surrounding does not expand")(
+    """
+    ....a....
+    ...a.a...
+    ..a.a.a..
+    .a.a.a.a.
+    a.a.aBa.a
+    .a.a.a.a.
+    ..a.a.a..
+    ...a.a...
+    ....a....
+    """
+  ) { (field, surroundings) =>
+      assert(field.scoreRed == 1)
+      assert(field.scoreBlack == 0)
+      assert(surroundings.size == 1)
+
+      assert(field.lastSurroundChain.map(_.chain.size) == Some(4))
+
+      assert(field.isPuttingAllowed(Pos(7, 4)))
+      assert(field.isPuttingAllowed(Pos(5, 4)))
+      assert(field.isPuttingAllowed(Pos(5, 6)))
+      assert(field.isPuttingAllowed(Pos(7, 6)))
+
+      assert(!field.isPuttingAllowed(Pos(6, 5)))
+    }
 }
