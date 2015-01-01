@@ -198,7 +198,7 @@ final class Field private (
       val (realCaptures, emptyCaptures) = captures.partition(_._3 != 0)
       val deltaScore = realCaptures.map(_._3).sum
       val realCaptured = realCaptures.flatMap(_._2)
-      val captureChain = realCaptures.flatMap(_._1.reverse)
+      val captureChain = realCaptures.flatMap(_._1.reverse).foldRight(List.empty[Pos])((p, acc) => if (acc.contains(p)) acc.dropWhile(_ != p) else p :: acc)
       if (value.isEmptyBase(enemy)) {
         val (enemyEmptyBaseChain, enemyEmptyBase) = getEmptyBase(pos, enemy)
         if (captures.nonEmpty) {
