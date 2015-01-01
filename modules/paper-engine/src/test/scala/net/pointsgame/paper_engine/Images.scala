@@ -35,7 +35,7 @@ trait Images { self: FunSuite =>
       case (char, pos) => ColoredPos(pos, Player(char.isLower))
     }
 
-  def constructFields(image: String) = {
+  def constructFields(image: String): List[Field] = {
     val lines = image.stripMargin.lines.toVector.map(_.trim).filter(_.nonEmpty)
     require(lines.groupBy(_.length).size == 1, "lines must have equal length")
 
@@ -43,7 +43,7 @@ trait Images { self: FunSuite =>
       List(Field(lines.head.length + 2, lines.size + 2))
     } {
       case (fields @ (h :: _), newPos) => h.putPoint(newPos.pos, newPos.player) :: fields
-      case _                           => throw new IllegalStateException("empty list with fields")
+      case _                           => throw new IllegalStateException("empty list")
     }
   }
 

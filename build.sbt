@@ -10,7 +10,7 @@ val akkaLib = "com.typesafe.akka" %% "akka-actor" % "2.3.8"
 val commonSettings = scalariformSettings ++ Seq(
   version := "1.0.0-SNAPSHOT",
   scalaVersion := "2.11.4",
-  scalacOptions := Seq(
+  scalacOptions ++= Seq(
     "-unchecked",
     "-deprecation",
     "-feature",
@@ -22,7 +22,19 @@ val commonSettings = scalariformSettings ++ Seq(
     .setPreference(DoubleIndentClassDeclaration, true)
     .setPreference(MultilineScaladocCommentsStartOnFirstLine, true)
     .setPreference(AlignSingleLineCaseStatements, true),
-  wartremoverWarnings ++= Warts.all,
+  wartremoverErrors += Wart.Any2StringAdd,
+  wartremoverWarnings += Wart.AsInstanceOf,
+  wartremoverWarnings += Wart.EitherProjectionPartial,
+  wartremoverWarnings += Wart.IsInstanceOf,
+  wartremoverWarnings += Wart.JavaConversions,
+  wartremoverWarnings += Wart.NonUnitStatements,
+  wartremoverWarnings += Wart.Nothing,
+  wartremoverWarnings += Wart.Null,
+  wartremoverWarnings += Wart.OptionPartial,
+  wartremoverWarnings += Wart.Product,
+  wartremoverWarnings += Wart.Return,
+  wartremoverWarnings += Wart.Serializable,
+  wartremoverWarnings += Wart.TryPartial,
   libraryDependencies ++= Seq(
     scalatest,
     scalamock,
