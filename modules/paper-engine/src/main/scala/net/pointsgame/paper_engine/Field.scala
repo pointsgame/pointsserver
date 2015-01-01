@@ -7,7 +7,8 @@ final class Field private (
     val scoreRed: Int,
     val scoreBlack: Int,
     val moves: List[ColoredPos],
-    val lastSurroundChain: Option[ColoredChain]) {
+    val lastSurroundChain: Option[ColoredChain]
+) {
   def this(width: Int, height: Int) =
     this(Vector2D.fill(width, height)(EmptyPosValue), 0, 0, Nil, None)
   def width: Int =
@@ -193,18 +194,21 @@ final class Field private (
           for {
             chain <- buildChain(pos, chainPos, player)
             captured = getInsideRing(capturedPos, chain)
-            capturedCount = captured.count(isPlayersPoint(_, enemy))
-          } yield (chain, captured, capturedCount)
+            capturedMoves = moves.filter(cp => isPlayersPoint(cp.pos, enemy) && captured.contains(cp.pos))
+            capturedCount = capturedMoves.count(_.player == enemy)
+            freedCount = capturedMoves.size - capturedCount
+          } yield (chain, captured, capturedCount, freedCount)
       }
       val (realCaptures, emptyCaptures) = captures.partition(_._3 != 0)
-      val deltaScore = realCaptures.map(_._3).sum
+      val capturedCount = realCaptures.map(_._3).sum
+      val freedCount = realCaptures.map(_._4).sum
       val realCaptured = realCaptures.flatMap(_._2)
       val captureChain = realCaptures.flatMap(_._1.reverse).foldRight(List.empty[Pos])((p, acc) => if (p != pos && acc.contains(p)) acc.dropWhile(_ != p) else p :: acc)
       if (value.isEmptyBase(enemy)) {
         val (enemyEmptyBaseChain, enemyEmptyBase) = getEmptyBase(pos, enemy)
         if (captures.nonEmpty) {
-          val newScoreRed = if (player == Player.Red) scoreRed + deltaScore else scoreRed
-          val newScoreBlack = if (player == Player.Black) scoreBlack + deltaScore else scoreBlack
+          val newScoreRed = if (player == Player.Red) scoreRed + capturedCount else scoreRed - freedCount
+          val newScoreBlack = if (player == Player.Black) scoreBlack + capturedCount else scoreBlack - freedCount
           val updatedVector1 = enemyEmptyBase.foldLeft(vector)((acc, p) => acc.updated(p.x, p.y, EmptyPosValue))
           val updatedVector2 = updatedVector1.updated(pos.x, pos.y, PlayerPosValue(player))
           val updatedVector3 = realCaptured.foldLeft(updatedVector2)((acc, p) => acc.updated(p.x, p.y, PlayerPosValue(player)))
@@ -217,8 +221,8 @@ final class Field private (
         }
       } else {
         val newEmptyBase = emptyCaptures.flatMap(_._2)
-        val newScoreRed = if (player == Player.Red) scoreRed + deltaScore else scoreRed
-        val newScoreBlack = if (player == Player.Black) scoreBlack + deltaScore else scoreBlack
+        val newScoreRed = if (player == Player.Red) scoreRed + capturedCount else scoreRed - freedCount
+        val newScoreBlack = if (player == Player.Black) scoreBlack + capturedCount else scoreBlack - freedCount
         val updatedVector1 = vector.updated(pos.x, pos.y, PlayerPosValue(player))
         val updatedVector2 = newEmptyBase.foldLeft(updatedVector1)((acc, p) => acc.updated(p.x, p.y, EmptyBasePosValue(player)))
         val updatedVector3 = realCaptured.foldLeft(updatedVector2)((acc, p) => acc.updated(p.x, p.y, PlayerPosValue(player)))
