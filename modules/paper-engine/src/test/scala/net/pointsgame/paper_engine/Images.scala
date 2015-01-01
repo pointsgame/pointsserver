@@ -29,7 +29,8 @@ trait Images { self: FunSuite =>
     constructMoveList(lines).foldLeft {
       List(Field(lines.head.length + 2, lines.size + 2))
     } {
-      (fields, newPos) => fields.head.putPoint(newPos.pos, newPos.player) :: fields
+      case (fields @ (h :: _), newPos) => h.putPoint(newPos.pos, newPos.player) :: fields
+      case _                           => throw new IllegalStateException("empty list with fields")
     }
   }
 
