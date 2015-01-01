@@ -34,6 +34,48 @@ class TestWithImages extends FunSuite with DiagrammedAssertions {
     assert(!field.isPuttingAllowed(Pos(2, 3)))
   }
 
+  test("move priority") {
+    val (field, surroundings) = constructField(
+      """
+      .aB.
+      aCaB
+      .aB.
+      """
+    )
+    assert(field.scoreRed == 0)
+    assert(field.scoreBlack == 1)
+    assert(surroundings.size == 1)
+  }
+
+  test("move priority, big") {
+    val (field, surroundings) = constructField(
+      """
+      .B..
+      BaB.
+      aCaB
+      .aB.
+      """
+    )
+    assert(field.scoreRed == 0)
+    assert(field.scoreBlack == 2)
+    assert(surroundings.size == 1)
+  }
+
+  test("onion surroundings") {
+    val (field, surroundings) = constructField(
+      """
+      ...c...
+      ..cBc..
+      .cBaBc.
+      ..cBc..
+      ...c...
+      """
+    )
+    assert(field.scoreRed == 4)
+    assert(field.scoreBlack == 0)
+    assert(surroundings.size == 2)
+  }
+
   test("apply 'control' surrounding in same turn") {
     val (field, surroundings) = constructField(
       """
@@ -106,6 +148,76 @@ class TestWithImages extends FunSuite with DiagrammedAssertions {
     assert(!field.isPuttingAllowed(Pos(2, 2)))
   }
 
+  test("a hole inside a surrounding") {
+    val (field, surroundings) = constructField(
+      """
+      ....c....
+      ...c.c...
+      ..c...c..
+      .c..a..c.
+      c..a.a..c
+      .c..a..c.
+      ..c...c..
+      ...cBc...
+      ....d....
+      """
+    )
+    assert(field.scoreRed == 1)
+    assert(field.scoreBlack == 0)
+    assert(surroundings.size == 1)
+    assert(!field.isPuttingAllowed(Pos(5, 5)))
+    assert(!field.isPuttingAllowed(Pos(5, 2)))
+  }
+
+  test("a hole inside a surrounding, after 'control' surrounding") {
+    val (field, surroundings) = constructField(
+      """
+      ....b....
+      ...b.b...
+      ..b...b..
+      .b..a..b.
+      b..a.a..b
+      .b..a..b.
+      ..b...b..
+      ...bCb...
+      ....b....
+      """
+    )
+    assert(field.scoreRed == 1)
+    assert(field.scoreBlack == 0)
+    assert(surroundings.size == 1)
+    assert(!field.isPuttingAllowed(Pos(5, 5)))
+    assert(!field.isPuttingAllowed(Pos(5, 2)))
+  }
+
+  test("surrounding does not expand") {
+    val (field, surroundings) = constructField(
+      """
+      ....a....
+      ...a.a...
+      ..a.a.a..
+      .a.a.a.a.
+      a.a.aBa.a
+      .a.a.a.a.
+      ..a.a.a..
+      ...a.a...
+      ....a....
+      """
+    )
+    assert(field.scoreRed == 1)
+    assert(field.scoreBlack == 0)
+    assert(surroundings.size == 1)
+
+    assert(field.lastSurroundChain.map(_.chain.size) == Some(4))
+
+    assert(field.isPuttingAllowed(Pos(7, 4)))
+    assert(field.isPuttingAllowed(Pos(5, 4)))
+    assert(field.isPuttingAllowed(Pos(5, 6)))
+    assert(field.isPuttingAllowed(Pos(7, 6)))
+
+    assert(!field.isPuttingAllowed(Pos(6, 5)))
+  }
+
   /** Every letter means a dot that should be placed on the field.
    *  Lower-cases are always Red, upper-cases are always Black.
    *  Order by which appropriate points are placed:
@@ -131,7 +243,7 @@ class TestWithImages extends FunSuite with DiagrammedAssertions {
     require(lines.groupBy(_.length).size == 1, "lines must have equal length")
 
     constructMoveList(lines).foldLeft {
-      Field(lines.head.length + 1, lines.size + 1) -> Vector.empty[ColoredChain]
+      Field(lines.head.length + 2, lines.size + 2) -> Vector.empty[ColoredChain]
     } {
       case ((field, surroundings), newPos) =>
         val newField = field.putPoint(newPos.pos, newPos.player)
