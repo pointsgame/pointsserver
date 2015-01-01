@@ -43,8 +43,7 @@ trait Images { self: FunSuite =>
     }
 
   def lastFieldImgTest(name: String)(image: String)(f: (Field, List[ColoredChain]) => Unit): Unit =
-    test(name) {
-      val fields = constructFields(image)
+    imgTest(name)(image) { fields =>
       f(fields.head, surroundings(fields))
     }
 }
