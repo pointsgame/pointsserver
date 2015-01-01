@@ -7,8 +7,7 @@ final class Field private (
     val scoreRed: Int,
     val scoreBlack: Int,
     val moves: List[ColoredPos],
-    val lastSurroundChain: Option[ColoredChain]
-) {
+    val lastSurroundChain: Option[ColoredChain]) {
   def width: Int =
     vector.width
   def height: Int =

@@ -106,6 +106,48 @@ class TestWithImages extends FunSuite with DiagrammedAssertions {
     assert(!field.isPuttingAllowed(Pos(2, 2)))
   }
 
+  test("a hole inside a surrounding") {
+    val (field, surroundings) = constructField(
+      """
+      ....c....
+      ...c.c...
+      ..c...c..
+      .c..a..c.
+      c..a.a..c
+      .c..a..c.
+      ..c...c..
+      ...cBc...
+      ....D....
+      """
+    )
+    assert(field.scoreRed == 1)
+    assert(field.scoreBlack == 0)
+    assert(surroundings.size == 1)
+    assert(!field.isPuttingAllowed(Pos(5, 5)))
+    assert(!field.isPuttingAllowed(Pos(5, 2)))
+  }
+
+  test("a hole inside a surrounding, after 'control' surrounding") {
+    val (field, surroundings) = constructField(
+      """
+      ....b....
+      ...b.b...
+      ..b...b..
+      .b..a..b.
+      b..a.a..b
+      .b..a..b.
+      ..b...b..
+      ...bCb...
+      ....b....
+      """
+    )
+    assert(field.scoreRed == 1)
+    assert(field.scoreBlack == 0)
+    assert(surroundings.size == 1)
+    assert(!field.isPuttingAllowed(Pos(5, 5)))
+    assert(!field.isPuttingAllowed(Pos(5, 2)))
+  }
+
   /** Every letter means a dot that should be placed on the field.
    *  Lower-cases are always Red, upper-cases are always Black.
    *  Order by which appropriate points are placed:
@@ -131,7 +173,7 @@ class TestWithImages extends FunSuite with DiagrammedAssertions {
     require(lines.groupBy(_.length).size == 1, "lines must have equal length")
 
     constructMoveList(lines).foldLeft {
-      Field(lines.head.length + 1, lines.size + 1) -> Vector.empty[ColoredChain]
+      Field(lines.head.length + 2, lines.size + 2) -> Vector.empty[ColoredChain]
     } {
       case ((field, surroundings), newPos) =>
         val newField = field.putPoint(newPos.pos, newPos.player)
