@@ -149,24 +149,24 @@ final class Field private (
       case (a, b, c) => b == pos.y && ((a < b && c > b) || (a > b && c < b))
     } % 2 == 1
   }
-  def wave(startPos: Pos, f: Pos => Boolean): List[Pos] = {
+  def wave(startPos: Pos, f: Pos => Boolean): Set[Pos] = {
     def neighborhood(pos: Pos): List[Pos] =
       List(pos.n, pos.s, pos.w, pos.e)
     def nextFront(passed: Set[Pos], front: Set[Pos]): Set[Pos] =
       front.flatMap(neighborhood).filter(isInField).diff(passed).filter(f)
     @tailrec
-    def _wave(passed: Set[Pos], front: Set[Pos]): List[Pos] =
+    def _wave(passed: Set[Pos], front: Set[Pos]): Set[Pos] =
       if (front.isEmpty)
-        passed.toList
+        passed
       else
         _wave(passed.union(front), nextFront(passed, front))
     _wave(Set.empty, Set(startPos))
   }
-  private def getInsideRing(startPos: Pos, ring: List[Pos]): List[Pos] = {
+  private def getInsideRing(startPos: Pos, ring: List[Pos]): Set[Pos] = {
     val ringSet = ring.toSet
     wave(startPos, !ringSet.contains(_))
   }
-  private def getEmptyBase(startPos: Pos, player: Player): (List[Pos], List[Pos]) = {
+  private def getEmptyBase(startPos: Pos, player: Player): (List[Pos], Set[Pos]) = {
     @tailrec
     def getEmptyBaseChain(pos: Pos): List[Pos] =
       if (!isPlayersPoint(pos, player)) {
