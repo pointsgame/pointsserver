@@ -7,13 +7,13 @@ trait Images { self: FunSuite =>
   /** @param size = field size */
   def rotations(size: Int): List[Pos => Pos] = List[Pos => Pos](
     { case Pos(x, y) => Pos(x, y) },
-    { case Pos(x, y) => Pos(size - x, y) },
-    { case Pos(x, y) => Pos(x, size - y) },
-    { case Pos(x, y) => Pos(size - x, size - y) },
+    { case Pos(x, y) => Pos(size - 1 - x, y) },
+    { case Pos(x, y) => Pos(x, size - 1 - y) },
+    { case Pos(x, y) => Pos(size - 1 - x, size - 1 - y) },
     { case Pos(x, y) => Pos(y, x) },
-    { case Pos(x, y) => Pos(size - y, x) },
-    { case Pos(x, y) => Pos(y, size - x) },
-    { case Pos(x, y) => Pos(size - y, size - x) }
+    { case Pos(x, y) => Pos(size - 1 - y, x) },
+    { case Pos(x, y) => Pos(y, size - 1 - x) },
+    { case Pos(x, y) => Pos(size - 1 - y, size - 1 - x) }
   )
 
   /** Every letter means a dot that should be placed on the field.
@@ -28,12 +28,27 @@ trait Images { self: FunSuite =>
       (char, x) <- line.zipWithIndex
       if char.toLower != char.toUpper
     } yield {
-      char -> Pos(x + 1, y + 1)
+      char -> Pos(x, y)
     }).sortBy {
       case (char, _) => char.toLower -> char.isLower
     }.map {
       case (char, pos) => ColoredPos(pos, Player(char.isLower))
     }
+
+  def constructFieldsWithRotations(image: String): List[(Field, List[ColoredChain], Pos => Pos)] = {
+    val lines = image.stripMargin.lines.toVector.map(_.trim).filter(_.nonEmpty)
+    require(lines.groupBy(_.length).size == 1, "lines must have equal length")
+    val fieldSize = math.max(lines.size, lines.head.length)
+
+    rotations(fieldSize).map { rotate =>
+      val fieldHistory = constructMoveList(lines).foldLeft {
+        List(Field(fieldSize, fieldSize))
+      } {
+        (history, newMove) => history.head.putPoint(rotate(newMove.pos), newMove.player) :: history
+      }
+      Tuple3(fieldHistory.head, fieldHistory.flatMap(_.lastSurroundChain), rotate)
+    }
+  }
 
   def constructFields(image: String): List[Field] = {
     val lines = image.stripMargin.lines.toVector.map(_.trim).filter(_.nonEmpty)

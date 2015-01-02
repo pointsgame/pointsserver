@@ -7,207 +7,244 @@ import org.scalacheck._
 import org.scalacheck.Prop._
 
 class FieldTest extends FunSuite with DiagrammedAssertions with Checkers with Images {
-  lastFieldImgTest("simple surround")(
-    """
-    .a.
-    cBa
-    .a.
-    """
-  ) { (field, surroundings) =>
-      assert(field.scoreRed == 1)
-      assert(field.scoreBlack == 0)
-      assert(surroundings.size == 1)
-    }
 
-  lastFieldImgTest("surround empty territory")(
-    """
-    .a.
-    a.a
-    .a.
-    """
-  ) { (field, surroundings) =>
-      assert(field.scoreRed == 0)
-      assert(field.scoreBlack == 0)
-      assert(surroundings.size == 0)
-      assert(field.isPuttingAllowed(Pos(2, 2)))
-      assert(!field.isPuttingAllowed(Pos(1, 2)))
-      assert(!field.isPuttingAllowed(Pos(2, 1)))
-      assert(!field.isPuttingAllowed(Pos(2, 3)))
-    }
+  test("simple surround") {
+    constructFieldsWithRotations(
+      """
+      .a.
+      cBa
+      .a.
+      """
+    ).foreach {
+        case (field, surroundings, rotate) =>
+          assert(field.scoreRed == 1)
+          assert(field.scoreBlack == 0)
+          assert(surroundings.size == 1)
+      }
+  }
 
-  lastFieldImgTest("move priority")(
-    """
-    .aB.
-    aCaB
-    .aB.
-    """
-  ) { (field, surroundings) =>
-      assert(field.scoreRed == 0)
-      assert(field.scoreBlack == 1)
-      assert(surroundings.size == 1)
-    }
+  test("surround empty territory") {
+    constructFieldsWithRotations(
+      """
+      .a.
+      a.a
+      .a.
+      """
+    ).foreach {
+        case (field, surroundings, rotate) =>
+          assert(field.scoreRed == 0)
+          assert(field.scoreBlack == 0)
+          assert(surroundings.size == 0)
+          assert(field.isPuttingAllowed(rotate(Pos(1, 1))))
+          assert(!field.isPuttingAllowed(rotate(Pos(0, 1))))
+          assert(!field.isPuttingAllowed(rotate(Pos(1, 0))))
+          assert(!field.isPuttingAllowed(rotate(Pos(1, 2))))
+      }
+  }
 
-  lastFieldImgTest("move priority, big")(
-    """
-    .B..
-    BaB.
-    aCaB
-    .aB.
-    """
-  ) { (field, surroundings) =>
-      assert(field.scoreRed == 0)
-      assert(field.scoreBlack == 2)
-      assert(surroundings.size == 1)
-    }
+  test("move priority") {
+    constructFieldsWithRotations(
+      """
+      .aB.
+      aCaB
+      .aB.
+      """
+    ).foreach {
+        case (field, surroundings, rotate) =>
+          assert(field.scoreRed == 0)
+          assert(field.scoreBlack == 1)
+          assert(surroundings.size == 1)
+      }
+  }
 
-  lastFieldImgTest("onion surroundings")(
-    """
-    ...c...
-    ..cBc..
-    .cBaBc.
-    ..cBc..
-    ...c...
-    """
-  ) { (field, surroundings) =>
-      assert(field.scoreRed == 4)
-      assert(field.scoreBlack == 0)
-      assert(surroundings.size == 2)
-    }
+  test("move priority, big") {
+    constructFieldsWithRotations(
+      """
+      .B..
+      BaB.
+      aCaB
+      .aB.
+      """
+    ).foreach {
+        case (field, surroundings, rotate) =>
+          assert(field.scoreRed == 0)
+          assert(field.scoreBlack == 2)
+          assert(surroundings.size == 1)
+      }
+  }
 
-  lastFieldImgTest("apply 'control' surrounding in same turn")(
-    """
-    .a.
-    aBa
-    .a.
-    """
-  ) { (field, surroundings) =>
-      assert(field.scoreRed == 1)
-      assert(field.scoreBlack == 0)
-      assert(surroundings.size == 1)
-    }
+  test("onion surroundings") {
+    constructFieldsWithRotations(
+      """
+      ...c...
+      ..cBc..
+      .cBaBc.
+      ..cBc..
+      ...c...
+      """
+    ).foreach {
+        case (field, surroundings, rotate) =>
+          assert(field.scoreRed == 4)
+          assert(field.scoreBlack == 0)
+          assert(surroundings.size == 2)
+      }
+  }
 
-  lastFieldImgTest("double surround")(
-    """
-    .b.b..
-    bAzAb.
-    .b.b..
-    """
-  ) { (field, surroundings) =>
-      assert(field.scoreRed == 2)
-      assert(field.scoreBlack == 0)
+  test("apply 'control' surrounding in same turn") {
+    constructFieldsWithRotations(
+      """
+      .a.
+      aBa
+      .a.
+      """
+    ).foreach {
+        case (field, surroundings, rotate) =>
+          assert(field.scoreRed == 1)
+          assert(field.scoreBlack == 0)
+          assert(surroundings.size == 1)
+      }
+  }
 
-      // These assertions rely on `Field` conventions.
-      // We assume there can be exactly one surrounding per turn
-      // (but the surrounding may seem like two separate surroundings on GUI).
-      assert(field.lastSurroundChain.map(_.chain.size) == Some(8))
-      assert(surroundings.size == 1)
-    }
+  test("double surround") {
+    constructFieldsWithRotations(
+      """
+      .b.b..
+      bAzAb.
+      .b.b..
+      """
+    ).foreach {
+        case (field, surroundings, rotate) =>
+          assert(field.scoreRed == 2)
+          assert(field.scoreBlack == 0)
 
-  lastFieldImgTest("double surround with empty part")(
-    """
-    .b.b..
-    b.zAb.
-    .b.b..
-    """
-  ) { (field, surroundings) =>
-      assert(field.scoreRed == 1)
-      assert(field.scoreBlack == 0)
-      assert(surroundings.size == 1)
-      assert(field.isPuttingAllowed(Pos(2, 2)))
-      assert(!field.isPuttingAllowed(Pos(4, 2)))
-    }
+          // These assertions rely on `Field` conventions.
+          // We assume there can be exactly one surrounding per turn
+          // (but the surrounding may seem like two separate surroundings on GUI).
+          assert(field.lastSurroundChain.map(_.chain.size) == Some(8))
+          assert(surroundings.size == 1)
+      }
+  }
 
-  lastFieldImgTest("should not leave empty inside")(
-    """
-    .aaaa..
-    a....a.
-    a.b...a
-    .z.bC.a
-    a.b...a
-    a....a.
-    .aaaa..
-    """
-  ) { (field, surroundings) =>
-      assert(field.scoreRed == 1)
-      assert(field.scoreBlack == 0)
-      assert(surroundings.size == 1)
+  test("double surround with empty part") {
+    constructFieldsWithRotations(
+      """
+      .b.b..
+      b.zAb.
+      .b.b..
+      """
+    ).foreach {
+        case (field, surroundings, rotate) =>
+          assert(field.scoreRed == 1)
+          assert(field.scoreBlack == 0)
+          assert(surroundings.size == 1)
+          assert(field.isPuttingAllowed(rotate(Pos(1, 1))))
+          assert(!field.isPuttingAllowed(rotate(Pos(3, 1))))
+      }
+  }
 
-      assert(!field.isPuttingAllowed(Pos(3, 4)))
+  test("should not leave empty inside") {
+    constructFieldsWithRotations(
+      """
+      .aaaa..
+      a....a.
+      a.b...a
+      .z.bC.a
+      a.b...a
+      a....a.
+      .aaaa..
+      """
+    ).foreach {
+        case (field, surroundings, rotate) =>
+          assert(field.scoreRed == 1)
+          assert(field.scoreBlack == 0)
+          assert(surroundings.size == 1)
 
-      assert(!field.isPuttingAllowed(Pos(3, 5)))
-      assert(!field.isPuttingAllowed(Pos(3, 3)))
-      assert(!field.isPuttingAllowed(Pos(2, 4)))
-      assert(!field.isPuttingAllowed(Pos(4, 4)))
+          assert(!field.isPuttingAllowed(rotate(Pos(2, 3))))
 
-      assert(!field.isPuttingAllowed(Pos(2, 2)))
-    }
+          assert(!field.isPuttingAllowed(rotate(Pos(2, 4))))
+          assert(!field.isPuttingAllowed(rotate(Pos(2, 2))))
+          assert(!field.isPuttingAllowed(rotate(Pos(1, 3))))
+          assert(!field.isPuttingAllowed(rotate(Pos(3, 3))))
 
-  lastFieldImgTest("a hole inside a surrounding")(
-    """
-    ....c....
-    ...c.c...
-    ..c...c..
-    .c..a..c.
-    c..a.a..c
-    .c..a..c.
-    ..c...c..
-    ...cBc...
-    ....d....
-    """
-  ) { (field, surroundings) =>
-      assert(field.scoreRed == 1)
-      assert(field.scoreBlack == 0)
-      assert(surroundings.size == 1)
-      assert(!field.isPuttingAllowed(Pos(5, 5)))
-      assert(!field.isPuttingAllowed(Pos(5, 2)))
-    }
+          assert(!field.isPuttingAllowed(rotate(Pos(1, 1))))
+      }
+  }
 
-  lastFieldImgTest("a hole inside a surrounding, after 'control' surrounding")(
-    """
-    ....b....
-    ...b.b...
-    ..b...b..
-    .b..a..b.
-    b..a.a..b
-    .b..a..b.
-    ..b...b..
-    ...bCb...
-    ....b....
-    """
-  ) { (field, surroundings) =>
-      assert(field.scoreRed == 1)
-      assert(field.scoreBlack == 0)
-      assert(surroundings.size == 1)
-      assert(!field.isPuttingAllowed(Pos(5, 5)))
-      assert(!field.isPuttingAllowed(Pos(5, 2)))
-    }
+  test("a hole inside a surrounding") {
+    constructFieldsWithRotations(
+      """
+      ....c....
+      ...c.c...
+      ..c...c..
+      .c..a..c.
+      c..a.a..c
+      .c..a..c.
+      ..c...c..
+      ...cBc...
+      ....d....
+      """
+    ).foreach {
+        case (field, surroundings, rotate) =>
+          assert(field.scoreRed == 1)
+          assert(field.scoreBlack == 0)
+          assert(surroundings.size == 1)
+          assert(!field.isPuttingAllowed(rotate(Pos(4, 4))))
+          assert(!field.isPuttingAllowed(rotate(Pos(4, 1))))
+      }
+  }
 
-  lastFieldImgTest("surrounding does not expand")(
-    """
-    ....a....
-    ...a.a...
-    ..a.a.a..
-    .a.a.a.a.
-    a.a.aBa.a
-    .a.a.a.a.
-    ..a.a.a..
-    ...a.a...
-    ....a....
-    """
-  ) { (field, surroundings) =>
-      assert(field.scoreRed == 1)
-      assert(field.scoreBlack == 0)
-      assert(surroundings.size == 1)
+  test("a hole inside a surrounding, after 'control' surrounding") {
+    constructFieldsWithRotations(
+      """
+      ....b....
+      ...b.b...
+      ..b...b..
+      .b..a..b.
+      b..a.a..b
+      .b..a..b.
+      ..b...b..
+      ...bCb...
+      ....b....
+      """
+    ).foreach {
+        case (field, surroundings, rotate) =>
+          assert(field.scoreRed == 1)
+          assert(field.scoreBlack == 0)
+          assert(surroundings.size == 1)
+          assert(!field.isPuttingAllowed(rotate(Pos(4, 4))))
+          assert(!field.isPuttingAllowed(rotate(Pos(4, 1))))
+      }
+  }
 
-      assert(field.lastSurroundChain.map(_.chain.size) == Some(4))
+  test("surrounding does not expand") {
+    constructFieldsWithRotations(
+      """
+      ....a....
+      ...a.a...
+      ..a.a.a..
+      .a.a.a.a.
+      a.a.aBa.a
+      .a.a.a.a.
+      ..a.a.a..
+      ...a.a...
+      ....a....
+      """
+    ).foreach {
+        case (field, surroundings, rotate) =>
+          assert(field.scoreRed == 1)
+          assert(field.scoreBlack == 0)
+          assert(surroundings.size == 1)
 
-      assert(field.isPuttingAllowed(Pos(7, 4)))
-      assert(field.isPuttingAllowed(Pos(5, 4)))
-      assert(field.isPuttingAllowed(Pos(5, 6)))
-      assert(field.isPuttingAllowed(Pos(7, 6)))
+          assert(field.lastSurroundChain.map(_.chain.size) == Some(4))
 
-      assert(!field.isPuttingAllowed(Pos(6, 5)))
-    }
+          assert(field.isPuttingAllowed(rotate(Pos(6, 3))))
+          assert(field.isPuttingAllowed(rotate(Pos(4, 3))))
+          assert(field.isPuttingAllowed(rotate(Pos(4, 5))))
+          assert(field.isPuttingAllowed(rotate(Pos(6, 5))))
+
+          assert(!field.isPuttingAllowed(rotate(Pos(5, 4))))
+      }
+  }
 
   val minSize = 3
   val maxSize = 50
