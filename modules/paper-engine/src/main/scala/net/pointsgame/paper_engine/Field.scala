@@ -3,7 +3,7 @@ package net.pointsgame.paper_engine
 import scala.annotation.tailrec
 
 final class Field private (
-    private val vector: Vector2D[PosValue],
+    val vector: Vector2D[PosValue],
     val scoreRed: Int,
     val scoreBlack: Int,
     val moves: List[ColoredPos],
@@ -17,15 +17,19 @@ final class Field private (
     vector.height
   def lastPlayer: Option[Player] =
     moves.headOption.map(_.player)
-  private def apply(pos: Pos): PosValue =
+  def apply(pos: Pos): PosValue =
     vector(pos.x, pos.y)
   def isInField(pos: Pos): Boolean =
     pos.x >= 0 && pos.x < width && pos.y >= 0 && pos.y < height
   def isPuttingAllowed(pos: Pos): Boolean =
     isInField(pos) && apply(pos).isFree
   /** Returns `true` if the player controls the Pos (same color or has surrounded the Pos) */
-  def isPlayersPoint(pos: Pos, player: Player): Boolean =
+  def isPlayer(pos: Pos, player: Player): Boolean =
     isInField(pos) && apply(pos).isPlayer(player)
+  def isPlayersPoint(pos: Pos, player: Player): Boolean =
+    isInField(pos) && apply(pos).isPlayersPoint(player)
+  def isCapturedPoint(pos: Pos, player: Player): Boolean =
+    isInField(pos) && apply(pos).isCapturedPoint(player)
   private def getFirstNextPos(centerPos: Pos, pos: Pos): Pos = (pos.dx(centerPos), pos.dy(centerPos)) match {
     case (-1, -1) => centerPos.se
     case (0, -1)  => centerPos.ne
@@ -66,7 +70,7 @@ final class Field private (
     def getNextPlayerPos(centerPos: Pos, pos: Pos): Pos =
       if (pos == startPos)
         pos
-      else if (isPlayersPoint(pos, player))
+      else if (isPlayer(pos, player))
         pos
       else
         getNextPlayerPos(centerPos, getNextPos(centerPos, pos))
@@ -89,10 +93,10 @@ final class Field private (
   }
   private def getInputPoints(pos: Pos, player: Player): List[(Pos, Pos)] = {
     val list1 =
-      if (!isPlayersPoint(pos.w, player)) {
-        if (isPlayersPoint(pos.sw, player))
+      if (!isPlayer(pos.w, player)) {
+        if (isPlayer(pos.sw, player))
           (pos.sw, pos.w) :: Nil
-        else if (isPlayersPoint(pos.s, player))
+        else if (isPlayer(pos.s, player))
           (pos.s, pos.w) :: Nil
         else
           Nil
@@ -100,10 +104,10 @@ final class Field private (
         Nil
       }
     val list2 =
-      if (!isPlayersPoint(pos.n, player)) {
-        if (isPlayersPoint(pos.nw, player))
+      if (!isPlayer(pos.n, player)) {
+        if (isPlayer(pos.nw, player))
           (pos.nw, pos.n) :: list1
-        else if (isPlayersPoint(pos.w, player))
+        else if (isPlayer(pos.w, player))
           (pos.w, pos.n) :: list1
         else
           list1
@@ -111,10 +115,10 @@ final class Field private (
         list1
       }
     val list3 =
-      if (!isPlayersPoint(pos.e, player)) {
-        if (isPlayersPoint(pos.ne, player))
+      if (!isPlayer(pos.e, player)) {
+        if (isPlayer(pos.ne, player))
           (pos.ne, pos.e) :: list2
-        else if (isPlayersPoint(pos.n, player))
+        else if (isPlayer(pos.n, player))
           (pos.n, pos.e) :: list2
         else
           list2
@@ -122,10 +126,10 @@ final class Field private (
         list2
       }
     val list4 =
-      if (!isPlayersPoint(pos.s, player)) {
-        if (isPlayersPoint(pos.se, player))
+      if (!isPlayer(pos.s, player)) {
+        if (isPlayer(pos.se, player))
           (pos.se, pos.s) :: list3
-        else if (isPlayersPoint(pos.e, player))
+        else if (isPlayer(pos.e, player))
           (pos.e, pos.s) :: list3
         else
           list3
@@ -169,7 +173,7 @@ final class Field private (
   private def getEmptyBase(startPos: Pos, player: Player): (List[Pos], Set[Pos]) = {
     @tailrec
     def getEmptyBaseChain(pos: Pos): List[Pos] =
-      if (!isPlayersPoint(pos, player)) {
+      if (!isPlayer(pos, player)) {
         getEmptyBaseChain(pos.w)
       } else {
         val inputPoints = getInputPoints(pos, player)
@@ -181,6 +185,24 @@ final class Field private (
       }
     val emptyBaseChain = getEmptyBaseChain(startPos.w)
     (emptyBaseChain, getInsideRing(startPos, emptyBaseChain).filter(apply(_).isFree))
+  }
+  private def capture(posValue: PosValue, player: Player): PosValue = posValue match {
+    case EmptyPosValue =>
+      BasePosValue(player, false)
+    case PlayerPosValue(p) =>
+      if (p == player)
+        PlayerPosValue(p)
+      else
+        BasePosValue(player, true)
+    case BasePosValue(p, enemy) =>
+      if (p == player)
+        BasePosValue(p, enemy)
+      else if (enemy)
+        PlayerPosValue(player)
+      else
+        BasePosValue(player, false)
+    case EmptyBasePosValue(_) =>
+      BasePosValue(player, false)
   }
   def putPoint(pos: Pos, player: Player): Field = {
     require(isPuttingAllowed(pos), s"Field: putting not allowed at $pos.")
@@ -194,9 +216,8 @@ final class Field private (
           for {
             chain <- buildChain(pos, chainPos, player)
             captured = getInsideRing(capturedPos, chain)
-            capturedMoves = moves.filter(cp => isPlayersPoint(cp.pos, enemy) && captured.contains(cp.pos))
-            capturedCount = capturedMoves.count(_.player == enemy)
-            freedCount = capturedMoves.size - capturedCount
+            capturedCount = captured.count(isPlayersPoint(_, enemy))
+            freedCount = captured.count(isCapturedPoint(_, player))
           } yield (chain, captured, capturedCount, freedCount)
       }
       val (realCaptures, emptyCaptures) = captures.partition(_._3 != 0)
@@ -211,12 +232,12 @@ final class Field private (
           val newScoreBlack = if (player == Player.Black) scoreBlack + capturedCount else scoreBlack - freedCount
           val updatedVector1 = enemyEmptyBase.foldLeft(vector)((acc, p) => acc.updated(p.x, p.y, EmptyPosValue))
           val updatedVector2 = updatedVector1.updated(pos.x, pos.y, PlayerPosValue(player))
-          val updatedVector3 = realCaptured.foldLeft(updatedVector2)((acc, p) => acc.updated(p.x, p.y, PlayerPosValue(player)))
+          val updatedVector3 = realCaptured.foldLeft(updatedVector2)((acc, p) => acc.updated(p.x, p.y, capture(apply(p), player)))
           new Field(updatedVector3, newScoreRed, newScoreBlack, ColoredPos(pos, player) :: moves, Some(ColoredChain(captureChain, player)))
         } else {
           val newScoreRed = if (player == Player.Red) scoreRed else scoreRed + 1
           val newScoreBlack = if (player == Player.Black) scoreBlack else scoreBlack + 1
-          val updatedVector = enemyEmptyBase.foldLeft(vector)((acc, p) => acc.updated(p.x, p.y, PlayerPosValue(enemy)))
+          val updatedVector = enemyEmptyBase.foldLeft(vector)((acc, p) => acc.updated(p.x, p.y, BasePosValue(enemy, p == pos)))
           new Field(updatedVector, newScoreRed, newScoreBlack, ColoredPos(pos, player) :: moves, Some(ColoredChain(enemyEmptyBaseChain, enemy)))
         }
       } else {
@@ -225,7 +246,7 @@ final class Field private (
         val newScoreBlack = if (player == Player.Black) scoreBlack + capturedCount else scoreBlack - freedCount
         val updatedVector1 = vector.updated(pos.x, pos.y, PlayerPosValue(player))
         val updatedVector2 = newEmptyBase.foldLeft(updatedVector1)((acc, p) => acc.updated(p.x, p.y, EmptyBasePosValue(player)))
-        val updatedVector3 = realCaptured.foldLeft(updatedVector2)((acc, p) => acc.updated(p.x, p.y, PlayerPosValue(player)))
+        val updatedVector3 = realCaptured.foldLeft(updatedVector2)((acc, p) => acc.updated(p.x, p.y, capture(apply(p), player)))
         new Field(updatedVector3, newScoreRed, newScoreBlack, ColoredPos(pos, player) :: moves, if (captureChain.isEmpty) None else Some(ColoredChain(captureChain, player)))
       }
     }
