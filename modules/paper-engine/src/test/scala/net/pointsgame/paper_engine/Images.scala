@@ -1,19 +1,6 @@
 package net.pointsgame.paper_engine
 
-import org.scalatest.FunSuite
-
 object Images {
-  def rotations(size: Int): List[Pos => Pos] = List[Pos => Pos](
-    { case Pos(x, y) => Pos(x, y) },
-    { case Pos(x, y) => Pos(size - 1 - x, y) },
-    { case Pos(x, y) => Pos(x, size - 1 - y) },
-    { case Pos(x, y) => Pos(size - 1 - x, size - 1 - y) },
-    { case Pos(x, y) => Pos(y, x) },
-    { case Pos(x, y) => Pos(size - 1 - y, x) },
-    { case Pos(x, y) => Pos(y, size - 1 - x) },
-    { case Pos(x, y) => Pos(size - 1 - y, size - 1 - x) }
-  )
-
   /** Every letter means a dot that should be placed on the field.
    *  Lower-cases are always Red, upper-cases are always Black.
    *  Order by which appropriate points are placed:
@@ -38,6 +25,17 @@ object Images {
     }
     (width, height, moves)
   }
+
+  def rotations(size: Int): List[Pos => Pos] = List[Pos => Pos](
+    { case Pos(x, y) => Pos(x, y) },
+    { case Pos(x, y) => Pos(size - 1 - x, y) },
+    { case Pos(x, y) => Pos(x, size - 1 - y) },
+    { case Pos(x, y) => Pos(size - 1 - x, size - 1 - y) },
+    { case Pos(x, y) => Pos(y, x) },
+    { case Pos(x, y) => Pos(size - 1 - y, x) },
+    { case Pos(x, y) => Pos(y, size - 1 - x) },
+    { case Pos(x, y) => Pos(size - 1 - y, size - 1 - x) }
+  )
 
   def constructFieldsFromMoves(width: Int, height: Int, moves: List[ColoredPos]): List[Field] =
     moves.foldLeft {
