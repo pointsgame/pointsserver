@@ -2,9 +2,7 @@ package net.pointsgame.paper_engine
 
 import org.scalatest.FunSuite
 
-trait Images { self: FunSuite =>
-
-  /** @param size = field size */
+object Images {
   def rotations(size: Int): List[Pos => Pos] = List[Pos => Pos](
     { case Pos(x, y) => Pos(x, y) },
     { case Pos(x, y) => Pos(size - 1 - x, y) },
@@ -22,9 +20,13 @@ trait Images { self: FunSuite =>
    *  all 'a' points (Red), all 'A' points (Black),
    *  all 'b' points (Red), all 'B' points (Black), etc...
    */
-  def constructMoveList(image: Vector[String]) =
-    (for {
-      (line, y) <- image.zipWithIndex
+  def constructMoveList(image: String): (Int, Int, List[ColoredPos]) = {
+    val lines = image.stripMargin.lines.toList.map(_.trim).filter(_.nonEmpty)
+    require(lines.groupBy(_.length).size == 1, "lines must have equal length")
+    val width = lines.head.length
+    val height = lines.size
+    val moves = (for {
+      (line, y) <- lines.zipWithIndex
       (char, x) <- line.zipWithIndex
       if char.toLower != char.toUpper
     } yield {
@@ -34,45 +36,41 @@ trait Images { self: FunSuite =>
     }.map {
       case (char, pos) => ColoredPos(pos, Player(char.isLower))
     }
-
-  def constructFieldsWithRotations(image: String): List[(Field, List[ColoredChain], Pos => Pos)] = {
-    val lines = image.stripMargin.lines.toVector.map(_.trim).filter(_.nonEmpty)
-    require(lines.groupBy(_.length).size == 1, "lines must have equal length")
-    val fieldSize = math.max(lines.size, lines.head.length)
-
-    rotations(fieldSize).map { rotate =>
-      val fieldHistory = constructMoveList(lines).foldLeft {
-        List(Field(fieldSize, fieldSize))
-      } {
-        (history, newMove) => history.head.putPoint(rotate(newMove.pos), newMove.player) :: history
-      }
-      Tuple3(fieldHistory.head, fieldHistory.flatMap(_.lastSurroundChain), rotate)
-    }
+    (width, height, moves)
   }
 
-  def constructFields(image: String): List[Field] = {
-    val lines = image.stripMargin.lines.toVector.map(_.trim).filter(_.nonEmpty)
-    require(lines.groupBy(_.length).size == 1, "lines must have equal length")
-
-    constructMoveList(lines).foldLeft {
-      List(Field(lines.head.length + 2, lines.size + 2))
+  def constructFieldsFromMoves(width: Int, height: Int, moves: List[ColoredPos]): List[Field] =
+    moves.foldLeft {
+      List(Field(width, height))
     } {
-      case (fields @ (h :: _), newPos) => h.putPoint(newPos.pos, newPos.player) :: fields
-      case _                           => throw new IllegalStateException("empty list")
+      (fields, cp) => fields.head.putPoint(cp.pos, cp.player) :: fields
+    }
+
+  def constructFieldsFromMovesWithRotations(width: Int, height: Int, moves: List[ColoredPos]): List[(List[Field], Pos => Pos)] = {
+    val fieldSize = math.max(width, height)
+    rotations(fieldSize).map { rotate =>
+      val rotatedMoves = moves.map(cp => cp.copy(pos = rotate(cp.pos)))
+      constructFieldsFromMoves(fieldSize, fieldSize, rotatedMoves) -> rotate
     }
   }
 
   def surroundings(fields: List[Field]) =
     fields.flatMap(_.lastSurroundChain)
 
-  def imgTest(name: String)(image: String)(f: List[Field] => Unit): Unit =
-    test(name) {
-      val fields = constructFields(image)
-      f(fields)
-    }
+  def constructFields(image: String): List[Field] =
+    (constructFieldsFromMoves _).tupled(constructMoveList(image))
 
-  def lastFieldImgTest(name: String)(image: String)(f: (Field, List[ColoredChain]) => Unit): Unit =
-    imgTest(name)(image) { fields =>
-      f(fields.head, surroundings(fields))
+  def constructLastField(image: String): (Field, List[ColoredChain]) = {
+    val fields = constructFields(image)
+    (fields.head, surroundings(fields))
+  }
+
+  def constructFieldsWithRotations(image: String): List[(List[Field], Pos => Pos)] =
+    (constructFieldsFromMovesWithRotations _).tupled(constructMoveList(image))
+
+  def constructLastFieldWithRotations(image: String): List[(Field, List[ColoredChain], Pos => Pos)] =
+    constructFieldsWithRotations(image).map {
+      case (fields, rotate) =>
+        (fields.head, surroundings(fields), rotate)
     }
 }

@@ -7,7 +7,8 @@ final class Field private (
     val scoreRed: Int,
     val scoreBlack: Int,
     val moves: List[ColoredPos],
-    val lastSurroundChain: Option[ColoredChain]) {
+    val lastSurroundChain: Option[ColoredChain]
+) {
   def this(width: Int, height: Int) =
     this(Vector2D.fill(width, height)(EmptyPosValue), 0, 0, Nil, None)
   def width: Int =
@@ -203,6 +204,21 @@ final class Field private (
     case EmptyBasePosValue(_) =>
       BasePosValue(player, false)
   }
+  private def uniteCaptureChains(pos: Pos, chains: List[List[Pos]]): List[Pos] = {
+    @tailrec
+    def _uniteCaptureChains(l: List[List[Pos]]): List[Pos] = {
+      val first = l.head
+      val last = l.last
+      if (first.head != last(last.size - 2))
+        l.flatten.foldRight(List.empty[Pos])((p, acc) => if (p != pos && acc.contains(p)) acc.dropWhile(_ != p) else p :: acc)
+      else
+        _uniteCaptureChains(l.tail :+ first)
+    }
+    if (chains.size < 2)
+      chains.flatten
+    else
+      _uniteCaptureChains(chains)
+  }
   def putPoint(pos: Pos, player: Player): Field = {
     require(isPuttingAllowed(pos), s"Field: putting not allowed at $pos.")
     val enemy = player.next
@@ -223,7 +239,7 @@ final class Field private (
       val capturedCount = realCaptures.map(_._3).sum
       val freedCount = realCaptures.map(_._4).sum
       val realCaptured = realCaptures.flatMap(_._2)
-      val captureChain = realCaptures.flatMap(_._1.reverse).foldRight(List.empty[Pos])((p, acc) => if (p != pos && acc.contains(p)) acc.dropWhile(_ != p) else p :: acc)
+      val captureChain = uniteCaptureChains(pos, realCaptures.map(_._1))
       if (value.isEmptyBase(enemy)) {
         val (enemyEmptyBaseChain, enemyEmptyBase) = getEmptyBase(pos, enemy)
         if (captures.nonEmpty) {

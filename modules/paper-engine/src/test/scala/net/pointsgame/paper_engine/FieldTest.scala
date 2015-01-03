@@ -6,10 +6,11 @@ import org.scalatest.prop.Checkers
 import org.scalacheck._
 import org.scalacheck.Prop._
 
-class FieldTest extends FunSuite with DiagrammedAssertions with Checkers with Images {
+class FieldTest extends FunSuite with DiagrammedAssertions with Checkers {
+  import Images._
 
   test("simple surround") {
-    constructFieldsWithRotations(
+    constructLastFieldWithRotations(
       """
       .a.
       cBa
@@ -24,7 +25,7 @@ class FieldTest extends FunSuite with DiagrammedAssertions with Checkers with Im
   }
 
   test("surround empty territory") {
-    constructFieldsWithRotations(
+    constructLastFieldWithRotations(
       """
       .a.
       a.a
@@ -43,7 +44,7 @@ class FieldTest extends FunSuite with DiagrammedAssertions with Checkers with Im
   }
 
   test("move priority") {
-    constructFieldsWithRotations(
+    constructLastFieldWithRotations(
       """
       .aB.
       aCaB
@@ -58,7 +59,7 @@ class FieldTest extends FunSuite with DiagrammedAssertions with Checkers with Im
   }
 
   test("move priority, big") {
-    constructFieldsWithRotations(
+    constructLastFieldWithRotations(
       """
       .B..
       BaB.
@@ -74,7 +75,7 @@ class FieldTest extends FunSuite with DiagrammedAssertions with Checkers with Im
   }
 
   test("onion surroundings") {
-    constructFieldsWithRotations(
+    constructLastFieldWithRotations(
       """
       ...c...
       ..cBc..
@@ -91,7 +92,7 @@ class FieldTest extends FunSuite with DiagrammedAssertions with Checkers with Im
   }
 
   test("apply 'control' surrounding in same turn") {
-    constructFieldsWithRotations(
+    constructLastFieldWithRotations(
       """
       .a.
       aBa
@@ -106,7 +107,7 @@ class FieldTest extends FunSuite with DiagrammedAssertions with Checkers with Im
   }
 
   test("double surround") {
-    constructFieldsWithRotations(
+    constructLastFieldWithRotations(
       """
       .b.b..
       bAzAb.
@@ -126,7 +127,7 @@ class FieldTest extends FunSuite with DiagrammedAssertions with Checkers with Im
   }
 
   test("double surround with empty part") {
-    constructFieldsWithRotations(
+    constructLastFieldWithRotations(
       """
       .b.b..
       b.zAb.
@@ -143,7 +144,7 @@ class FieldTest extends FunSuite with DiagrammedAssertions with Checkers with Im
   }
 
   test("should not leave empty inside") {
-    constructFieldsWithRotations(
+    constructLastFieldWithRotations(
       """
       .aaaa..
       a....a.
@@ -171,7 +172,7 @@ class FieldTest extends FunSuite with DiagrammedAssertions with Checkers with Im
   }
 
   test("a hole inside a surrounding") {
-    constructFieldsWithRotations(
+    constructLastFieldWithRotations(
       """
       ....c....
       ...c.c...
@@ -194,7 +195,7 @@ class FieldTest extends FunSuite with DiagrammedAssertions with Checkers with Im
   }
 
   test("a hole inside a surrounding, after 'control' surrounding") {
-    constructFieldsWithRotations(
+    constructLastFieldWithRotations(
       """
       ....b....
       ...b.b...
@@ -217,7 +218,7 @@ class FieldTest extends FunSuite with DiagrammedAssertions with Checkers with Im
   }
 
   test("surrounding does not expand") {
-    constructFieldsWithRotations(
+    constructLastFieldWithRotations(
       """
       ....a....
       ...a.a...
@@ -243,6 +244,57 @@ class FieldTest extends FunSuite with DiagrammedAssertions with Checkers with Im
           assert(field.isPuttingAllowed(rotate(Pos(6, 5))))
 
           assert(!field.isPuttingAllowed(rotate(Pos(5, 4))))
+      }
+  }
+
+  test("2 adjacent surroundings") {
+    constructLastFieldWithRotations(
+      """
+      .a..
+      aAa.
+      .bAa
+      ..a.
+      """
+    ).foreach {
+        case (field, surroundings, rotate) =>
+          assert(field.scoreRed == 2)
+          assert(field.scoreBlack == 0)
+
+          assert(field.lastSurroundChain.map(_.chain.size) == Some(6))
+      }
+  }
+
+  test("2 opposite surroundings") {
+    constructLastFieldWithRotations(
+      """
+      .a.a.
+      aAbAa
+      .a.a.
+      """
+    ).foreach {
+        case (field, surroundings, rotate) =>
+          assert(field.scoreRed == 2)
+          assert(field.scoreBlack == 0)
+
+          assert(field.lastSurroundChain.map(_.chain.size) == Some(8))
+      }
+  }
+
+  test("3 surroundings") {
+    constructLastFieldWithRotations(
+      """
+      ..a..
+      .aAa.
+      ..bAa
+      .aAa.
+      ..a..
+      """
+    ).foreach {
+        case (field, surroundings, rotate) =>
+          assert(field.scoreRed == 3)
+          assert(field.scoreBlack == 0)
+
+          assert(field.lastSurroundChain.map(_.chain.size) == Some(8))
       }
   }
 
