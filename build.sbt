@@ -5,7 +5,9 @@ val scalamock = "org.scalamock" %% "scalamock-scalatest-support" % "3.2.1" % "te
 val scalacheck = "org.scalacheck" %% "scalacheck" % "1.12.1" % "test"
 val nscalaTime = "com.github.nscala-time" %% "nscala-time" % "1.6.0"
 val scalaz = "org.scalaz" %% "scalaz-core" % "7.1.0"
-val akkaLib = "com.typesafe.akka" %% "akka-actor" % "2.3.8"
+val akka = "com.typesafe.akka" %% "akka-actor" % "2.3.8"
+val socko = "org.mashupbots.socko" %% "socko-webserver" % "0.6.0"
+val argonaut = "io.argonaut" %% "argonaut" % "6.0.4"
 
 val commonSettings = scalariformSettings ++ Seq(
   version := "1.0.0-SNAPSHOT",
@@ -50,9 +52,14 @@ lazy val paperEngine = project.in(file("./modules/paper-engine"))
 lazy val akkaNetwork = project.in(file("./modules/akka-network"))
   .settings(commonSettings: _*)
   .settings(name := "akka-network")
-  .settings(libraryDependencies += akkaLib)
+  .settings(libraryDependencies += akka)
+
+lazy val webServer = project.in(file("./modules/web-server"))
+  .settings(commonSettings: _*)
+  .settings(name := "web-server")
+  .settings(libraryDependencies ++= Seq(socko, argonaut))
 
 // dummy module to aggregate other modules
 lazy val root = project.in(file("."))
   .settings(commonSettings: _*)
-  .aggregate(paperEngine, akkaNetwork)
+  .aggregate(paperEngine, akkaNetwork, webServer)
