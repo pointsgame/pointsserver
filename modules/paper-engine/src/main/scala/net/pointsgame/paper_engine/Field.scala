@@ -204,7 +204,7 @@ final class Field private (
     case EmptyBasePosValue(_) =>
       BasePosValue(player, false)
   }
-  private def uniteCaptureChains(pos: Pos, chains: List[List[Pos]]): List[Pos] = {
+  private def mergeCaptureChains(pos: Pos, chains: List[List[Pos]]): List[Pos] = {
     @tailrec
     def _uniteCaptureChains(l: List[List[Pos]]): List[Pos] = {
       val first = l.head
@@ -239,7 +239,7 @@ final class Field private (
       val capturedCount = realCaptures.map(_._3).sum
       val freedCount = realCaptures.map(_._4).sum
       val realCaptured = realCaptures.flatMap(_._2)
-      val captureChain = uniteCaptureChains(pos, realCaptures.map(_._1))
+      val captureChain = mergeCaptureChains(pos, realCaptures.map(_._1))
       if (value.isEmptyBase(enemy)) {
         val (enemyEmptyBaseChain, enemyEmptyBase) = getEmptyBase(pos, enemy)
         if (captures.nonEmpty) {
