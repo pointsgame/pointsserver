@@ -7,7 +7,7 @@ val nscalaTime = "com.github.nscala-time" %% "nscala-time" % "1.6.0"
 val scalaz = "org.scalaz" %% "scalaz-core" % "7.1.0"
 val akka = "com.typesafe.akka" %% "akka-actor" % "2.3.8"
 val socko = "org.mashupbots.socko" %% "socko-webserver" % "0.6.0"
-val argonaut = "io.argonaut" %% "argonaut" % "6.1-M4"
+val argonaut = "io.argonaut" %% "argonaut" % "6.1-M5"
 
 val commonSettings = scalariformSettings ++ Seq(
   version := "1.0.0-SNAPSHOT",
