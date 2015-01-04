@@ -15,13 +15,11 @@ object Main extends Logger {
       actorSystem.actorOf(Props[HelloHandler]) ! request
   }
 
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     val config = WebServerConfig(port = 8700)
     val webServer = new WebServer(config, routes, actorSystem)
     webServer.start()
-    Runtime.getRuntime.addShutdownHook(new Thread {
-      override def run(): Unit = webServer.stop()
-    })
+    scala.sys.addShutdownHook(webServer.stop())
   }
 }
 
