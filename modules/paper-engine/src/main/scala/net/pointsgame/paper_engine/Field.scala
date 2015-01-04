@@ -206,18 +206,18 @@ final class Field private (
   }
   private def mergeCaptureChains(pos: Pos, chains: List[List[Pos]]): List[Pos] = {
     @tailrec
-    def _uniteCaptureChains(l: List[List[Pos]]): List[Pos] = {
+    def _mergeCaptureChains(l: List[List[Pos]]): List[Pos] = {
       val first = l.head
       val last = l.last
       if (first.head != last(last.size - 2))
         l.flatten.foldRight(List.empty[Pos])((p, acc) => if (p != pos && acc.contains(p)) acc.dropWhile(_ != p) else p :: acc)
       else
-        _uniteCaptureChains(l.tail :+ first)
+        _mergeCaptureChains(l.tail :+ first)
     }
     if (chains.size < 2)
       chains.flatten
     else
-      _uniteCaptureChains(chains)
+      _mergeCaptureChains(chains)
   }
   def putPoint(pos: Pos, player: Player): Field = {
     require(isPuttingAllowed(pos), s"Field: putting not allowed at $pos.")
