@@ -18,18 +18,14 @@ class RandomGameFieldTest extends FunSuite with DiagrammedAssertions with Checke
     val finalFieldTry = Try {
       moves.foldLeft(field)((acc, pos) => if (acc.isPuttingAllowed(pos)) acc.putPoint(pos) else acc)
     }
-    val propsTry = finalFieldTry.map { finalField =>
+    finalFieldTry.map { finalField =>
       all(
         (finalField.scoreRed >= 0) :| "red score should be non-negative",
         (finalField.scoreBlack >= 0) :| "black score should be non-negative",
         ((field.scoreRed - field.scoreBlack).abs < width * height / 2) :| "score difference should be less than number of player moves",
         (field.scoreRed + field.scoreBlack <= (width - 2) * (height - 2)) :| "full score should be less than field size"
       )
-    }
-    all(
-      finalFieldTry.isSuccess :| "should be no exceptions",
-      propsTry.get
-    )
+    }.getOrElse(falsified :| "should be no exceptions")
   }))
 
 }
