@@ -27,7 +27,7 @@ final case class MessageHandler(serverConnection: ActorRef, oracle: Oracle) exte
       get {
         parameters('name, 'password) { (name, password) =>
           complete {
-            oracle.answer(RegisterQuestion(name, password)).map(_.asJson)
+            oracle.answer(RegisterQuestion(name, password))
           }
         }
       }
