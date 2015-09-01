@@ -57,6 +57,7 @@ lazy val `server` = project.in(file("./modules/server"))
 
 lazy val `domain` = project.in(file("./modules/domain"))
   .settings(commonSettings: _*)
+  .settings(libraryDependencies += argonaut)
 
 lazy val `db` = project.in(file("./modules/db"))
   .settings(commonSettings: _*)
