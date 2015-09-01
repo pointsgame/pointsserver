@@ -1,8 +1,6 @@
 package net.pointsgame.server
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import argonaut._
-import Argonaut._
 import akka.actor.ActorRef
 import net.pointsgame.server.api.RegisterQuestion
 import spray.can.websocket.{ FrameCommandFailed, WebSocketServerWorker }
