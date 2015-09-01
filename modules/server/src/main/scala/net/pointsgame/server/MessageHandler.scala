@@ -13,12 +13,16 @@ final case class MessageHandler(serverConnection: ActorRef, oracle: Oracle) exte
   override def receive =
     handshaking orElse businessLogicNoUpgrade orElse closeLogic
   override def businessLogic = {
-    case x @ (_: BinaryFrame | _: TextFrame) =>
-      sender() ! x
-    case x: FrameCommandFailed =>
-      log.error("frame command failed", x)
-    case x: HttpRequest =>
-    case _              => send(TextFrame(""))
+    case _: BinaryFrame =>
+      sender ! TextFrame("Binary frames are not supported!")
+    case textFrame: TextFrame =>
+      sender ! textFrame
+    case frameCommandFailed: FrameCommandFailed =>
+      log.error("Frame command failed.", frameCommandFailed)
+    case httpRequest: HttpRequest =>
+      businessLogicNoUpgrade(httpRequest)
+    case _ =>
+      send(TextFrame("Unrecognized event!"))
   }
   private val businessLogicNoUpgrade = runRoute {
     path("api" / "register") {
