@@ -8,8 +8,9 @@ import net.pointsgame.domain.Constants
 
 final class Users(tag: Tag) extends BaseTable[User](tag, "Users") {
   def name = column[String]("Name", O.Length(Constants.maxNameLength))
-  def password = column[String]("Password") //TODO: Length.
+  def passwordHash = column[Array[Byte]]("PasswordHash")
+  def salt = column[Array[Byte]]("Salt")
   def registrationDate = column[DateTime]("RegistrationDate")
-  def uniqueName = index("IdxUserName", name, unique = true)
-  def * = (id.?, name, password, registrationDate) <> (User.tupled, User.unapply)
+  def uniqueName = index("IdxUserName", name, unique = true) //TODO: name.toLowerCase ?
+  def * = (id.?, name, passwordHash, salt, registrationDate) <> (User.tupled, User.unapply)
 }

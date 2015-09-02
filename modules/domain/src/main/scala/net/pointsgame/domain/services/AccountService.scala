@@ -8,6 +8,7 @@ import com.github.nscala_time.time.Imports._
 import net.pointsgame.domain.model.User
 import net.pointsgame.domain.repositories.UserRepository
 import net.pointsgame.domain.{ Constants, DomainException }
+import net.pointsgame.domain.helpers.Hasher
 
 final case class AccountService(userRepository: UserRepository) {
   def register(name: String, password: String): Future[Int] = { //TODO: check name characters.
@@ -18,7 +19,8 @@ final case class AccountService(userRepository: UserRepository) {
     val result = for (exists <- userRepository.existsWithName(name)) yield {
       if (exists)
         throw new DomainException(s"User with name $name already exists.")
-      userRepository.insert(User(None, name, ???, DateTime.now()))
+      val salt = Hasher.generateSalt(Constants.saltLength)
+      userRepository.insert(User(None, name, Hasher.hash(password, salt), salt, DateTime.now()))
     }
     result.join
   }

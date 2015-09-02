@@ -7,7 +7,7 @@ import net.pointsgame.domain.model.User
 import net.pointsgame.db.schema.Users
 import net.pointsgame.domain.repositories.UserRepository
 
-final case class UserRepositoryImpl(db: Database) extends RepositoryBase[User, Users](db) with UserRepository {
+final case class SlickUserRepository(db: Database) extends RepositoryBase[User, Users](db) with UserRepository {
   override val query: TableQuery[Users] =
     TableQuery[Users]
   override def getByName(name: String): Future[Option[User]] = db.run {
