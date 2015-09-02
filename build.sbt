@@ -14,6 +14,7 @@ val sprayRouting = "io.spray" %% "spray-routing-shapeless2" % "1.3.3"
 val sprayWebsocket = "com.wandoulabs.akka" %% "spray-websocket" % "0.1.4"
 val slick = "com.typesafe.slick" %% "slick" % "3.0.2"
 val sqliteJdbc = "org.xerial" % "sqlite-jdbc" % "3.8.11.1"
+val slickJodaMapper = "com.github.tototoshi" %% "slick-joda-mapper" % "2.0.0"
 
 val commonSettings = scalariformSettings ++ Seq(
   version := "1.0.0-SNAPSHOT",
@@ -57,11 +58,11 @@ lazy val `server` = project.in(file("./modules/server"))
 
 lazy val `domain` = project.in(file("./modules/domain"))
   .settings(commonSettings: _*)
-  .settings(libraryDependencies += argonaut)
+  .settings(libraryDependencies ++= Seq(nscalaTime, argonaut))
 
 lazy val `db` = project.in(file("./modules/db"))
   .settings(commonSettings: _*)
-  .settings(libraryDependencies ++= Seq(slick))
+  .settings(libraryDependencies ++= Seq(nscalaTime, slick, slickJodaMapper))
   .dependsOn(domain)
 
 lazy val root = project.in(file("."))
