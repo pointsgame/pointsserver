@@ -1,22 +1,17 @@
 package net.pointsgame.domain
 
-import scalaz._
-import Scalaz._
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
-import net.pointsgame.domain.services.{ TokenService, AccountService }
 import net.pointsgame.domain.api._
+import net.pointsgame.domain.helpers.Tokenizer
 
-final class Oracle(accountService: AccountService, tokenService: TokenService) {
-  private var userId = none[Int]
-  def answer(question: TokenizedQuestion[Question]): Future[Answer] = {
-    ???
-  }
+final class Oracle(services: Services, var delivery: Delivery => Unit = _ => ()) {
+  lazy val connectionId = Tokenizer.generate(Constants.connectionIdLength)
   def answer(question: Question): Future[Answer] = {
     question match {
-      case RegisterQuestion(qId, name, password) =>
-        accountService.register(name, password).map(RegisterAnswer(qId, _))
-      case LoginQuestion(qId, name, password) =>
+      case RegisterQuestion(qId, token, name, password) =>
+        services.accountService.register(name, password).map(RegisterAnswer(qId, _))
+      case LoginQuestion(qId, token, name, password) =>
         ???
     }
   } recover {

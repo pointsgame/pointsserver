@@ -6,6 +6,9 @@ import akka.actor.{ Props, ActorSystem }
 import akka.io.IO
 import spray.can.Http
 import net.pointsgame.db.schema._
+import net.pointsgame.db.repositories.{ SlickTokenRepository, SlickUserRepository }
+import net.pointsgame.domain.Services
+import net.pointsgame.domain.services.{ TokenService, AccountService }
 
 object Main extends App {
   implicit val system = ActorSystem("server")
@@ -24,7 +27,15 @@ object Main extends App {
     db.run(setup)
   }
 
-  val handler = system.actorOf(Props(classOf[ConnectionHandler], db), "handler")
+  val userRepository = SlickUserRepository(db)
+  val tokenRepository = SlickTokenRepository(db)
+
+  val accountService = AccountService(userRepository)
+  val tokenService = TokenService(tokenRepository)
+
+  val services = Services(accountService, tokenService)
+
+  val handler = system.actorOf(Props(classOf[ConnectionHandler], services), "handler")
 
   IO(Http) ! Http.Bind(handler, "localhost", 8080)
 }

@@ -1,10 +1,11 @@
 package net.pointsgame.domain.helpers
 
-import java.security.SecureRandom
+import java.util.concurrent.ThreadLocalRandom
 import scala.util.Random
 
 object Tokenizer {
-  private val random = new Random(new SecureRandom)
-  def generate(numBytes: Int): String =
+  def generate(numBytes: Int): String = {
+    val random = new Random(ThreadLocalRandom.current())
     random.alphanumeric.take(numBytes).mkString
+  }
 }

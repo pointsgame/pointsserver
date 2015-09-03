@@ -1,24 +1,25 @@
 package net.pointsgame.server
 
-import net.pointsgame.domain.Oracle
-
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import akka.actor.ActorRef
 import akka.pattern.pipe
 import argonaut._
 import Argonaut._
-import net.pointsgame.domain.api.{ ErrorAnswer, Question, RegisterQuestion }
-import spray.can.websocket.{ FrameCommandFailed, WebSocketServerWorker }
+import spray.can.websocket.{ FrameCommandFailed, WebSocketServerWorker, UpgradedToWebSocket }
 import spray.can.websocket.frame.{ TextFrame, BinaryFrame }
 import spray.http.HttpRequest
 import spray.routing.HttpServiceActor
 import ArgonautSupport._
+import net.pointsgame.domain.api.{ ErrorAnswer, Question, RegisterQuestion }
+import net.pointsgame.domain.Oracle
 
 final case class MessageHandler(serverConnection: ActorRef, oracle: Oracle) extends HttpServiceActor with WebSocketServerWorker {
   override def receive =
     handshaking orElse businessLogicNoUpgrade orElse closeLogic
   override def businessLogic = {
+    case UpgradedToWebSocket =>
+      oracle.delivery = delivery => send(TextFrame(delivery.toString)) //TODO: JSON
     case _: BinaryFrame =>
       sender ! TextFrame("Binary frames are not supported!")
     case textFrame: TextFrame =>
@@ -39,8 +40,8 @@ final case class MessageHandler(serverConnection: ActorRef, oracle: Oracle) exte
   private val businessLogicNoUpgrade = runRoute {
     path(prefix / "register") {
       get {
-        parameters('qid.?, 'name, 'password) { (qId, name, password) =>
-          completeOracle(RegisterQuestion(qId, name, password))
+        parameters('qId.?, 'token.?, 'name, 'password) { (qId, token, name, password) =>
+          completeOracle(RegisterQuestion(qId, token, name, password))
         }
       } ~
         post {
