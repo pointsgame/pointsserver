@@ -2,11 +2,15 @@ package net.pointsgame.domain
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.collection.concurrent
 import net.pointsgame.domain.api._
-import net.pointsgame.domain.helpers.Tokenizer
 
-final class Oracle(services: Services, var delivery: Delivery => Unit = _ => ()) {
-  lazy val connectionId = Tokenizer.generate(Constants.connectionIdLength)
+final class Oracle(services: Services) {
+  private val connections = concurrent.TrieMap.empty[String, Delivery => Unit]
+  def connect(connectionId: String, callback: Delivery => Unit): Unit =
+    connections += connectionId -> callback
+  def disconnect(connectionId: String): Unit =
+    connections -= connectionId
   def answer(question: Question): Future[Answer] = {
     question match {
       case RegisterQuestion(qId, token, name, password) =>

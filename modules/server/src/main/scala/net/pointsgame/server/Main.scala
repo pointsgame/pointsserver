@@ -7,7 +7,7 @@ import akka.io.IO
 import spray.can.Http
 import net.pointsgame.db.schema._
 import net.pointsgame.db.repositories.{ SlickTokenRepository, SlickUserRepository }
-import net.pointsgame.domain.Services
+import net.pointsgame.domain.{ Oracle, Services }
 import net.pointsgame.domain.services.{ TokenService, AccountService }
 
 object Main extends App {
@@ -35,7 +35,9 @@ object Main extends App {
 
   val services = Services(accountService, tokenService)
 
-  val handler = system.actorOf(Props(classOf[ConnectionHandler], services), "handler")
+  val oracle = new Oracle(services)
+
+  val handler = system.actorOf(Props(classOf[ConnectionHandler], oracle), "handler")
 
   IO(Http) ! Http.Bind(handler, "localhost", 8080)
 }

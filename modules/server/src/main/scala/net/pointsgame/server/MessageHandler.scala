@@ -1,5 +1,7 @@
 package net.pointsgame.server
 
+import spray.can.Http
+
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import akka.actor.ActorRef
@@ -12,14 +14,16 @@ import spray.http.HttpRequest
 import spray.routing.HttpServiceActor
 import ArgonautSupport._
 import net.pointsgame.domain.api.{ ErrorAnswer, Question, RegisterQuestion }
-import net.pointsgame.domain.Oracle
+import net.pointsgame.domain.{ Constants, Oracle }
+import net.pointsgame.domain.helpers.Tokenizer
 
-final case class MessageHandler(serverConnection: ActorRef, oracle: Oracle) extends HttpServiceActor with WebSocketServerWorker {
+final class MessageHandler(val serverConnection: ActorRef, oracle: Oracle) extends HttpServiceActor with WebSocketServerWorker {
+  lazy val connectionId = Tokenizer.generate(Constants.connectionIdLength)
   override def receive =
     handshaking orElse businessLogicNoUpgrade orElse closeLogic
   override def businessLogic = {
     case UpgradedToWebSocket =>
-      oracle.delivery = delivery => send(TextFrame(delivery.toString)) //TODO: JSON
+      oracle.connect(connectionId, delivery => send(TextFrame(delivery.toString))) //TODO: JSON
     case _: BinaryFrame =>
       sender ! TextFrame("Binary frames are not supported!")
     case textFrame: TextFrame =>
@@ -32,6 +36,12 @@ final case class MessageHandler(serverConnection: ActorRef, oracle: Oracle) exte
       businessLogicNoUpgrade(httpRequest)
     case _ =>
       send(TextFrame("Unrecognized event!"))
+  }
+  override def closeLogic = {
+    case ev: Http.ConnectionClosed =>
+      oracle.disconnect(connectionId)
+      context.stop(self)
+      log.debug("Connection closed on event: {}", ev)
   }
   private val prefix = "api"
   private def completeOracle(question: Question) = complete {
