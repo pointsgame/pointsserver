@@ -7,8 +7,10 @@ import net.pointsgame.domain.api._
 
 final class Oracle(services: Services) {
   private val connections = concurrent.TrieMap.empty[String, Delivery => Unit]
-  def connect(connectionId: String, callback: Delivery => Unit): Unit =
+  def connect(connectionId: String, callback: Delivery => Unit): Unit = {
     connections += connectionId -> callback
+    callback(ConnectedDelivery(connectionId))
+  }
   def disconnect(connectionId: String): Unit =
     connections -= connectionId
   def answer(question: Question): Future[Answer] = {

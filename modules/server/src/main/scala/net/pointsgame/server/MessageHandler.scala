@@ -1,13 +1,12 @@
 package net.pointsgame.server
 
-import spray.can.Http
-
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import akka.actor.ActorRef
 import akka.pattern.pipe
 import argonaut._
 import Argonaut._
+import spray.can.Http
 import spray.can.websocket.{ FrameCommandFailed, WebSocketServerWorker, UpgradedToWebSocket }
 import spray.can.websocket.frame.{ TextFrame, BinaryFrame }
 import spray.http.HttpRequest
@@ -23,7 +22,7 @@ final class MessageHandler(val serverConnection: ActorRef, oracle: Oracle) exten
     handshaking orElse businessLogicNoUpgrade orElse closeLogic
   override def businessLogic = {
     case UpgradedToWebSocket =>
-      oracle.connect(connectionId, delivery => send(TextFrame(delivery.toString))) //TODO: JSON
+      oracle.connect(connectionId, delivery => send(TextFrame(delivery.asJson.nospaces)))
     case _: BinaryFrame =>
       sender ! TextFrame("Binary frames are not supported!")
     case textFrame: TextFrame =>
