@@ -5,7 +5,7 @@ import Argonaut._
 
 sealed trait Delivery
 
-case class ConnectedDelivery(id: String) extends Delivery
+final case class ConnectedDelivery(id: String) extends Delivery
 
 object Delivery {
   implicit val connectedDeliveryEncodeJson = EncodeJson { (delivery: ConnectedDelivery) =>

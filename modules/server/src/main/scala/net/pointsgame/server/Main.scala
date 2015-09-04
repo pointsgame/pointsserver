@@ -6,9 +6,9 @@ import akka.actor.{ Props, ActorSystem }
 import akka.io.IO
 import spray.can.Http
 import net.pointsgame.db.schema._
-import net.pointsgame.db.repositories.{ SlickTokenRepository, SlickUserRepository }
+import net.pointsgame.db.repositories._
 import net.pointsgame.domain.{ Oracle, Services }
-import net.pointsgame.domain.services.{ TokenService, AccountService }
+import net.pointsgame.domain.services._
 
 object Main extends App {
   implicit val system = ActorSystem("server")
@@ -29,11 +29,13 @@ object Main extends App {
 
   val userRepository = SlickUserRepository(db)
   val tokenRepository = SlickTokenRepository(db)
+  val roomMessageRepository = SlickRoomMessageRepository(db)
 
-  val accountService = AccountService(userRepository)
-  val tokenService = TokenService(tokenRepository)
+  val tokenService = new TokenService(tokenRepository)
+  val accountService = new AccountService(userRepository, tokenService)
+  val roomMessageService = new RoomMessageService(roomMessageRepository)
 
-  val services = Services(accountService, tokenService)
+  val services = Services(accountService, tokenService, roomMessageService)
 
   val oracle = new Oracle(services)
 

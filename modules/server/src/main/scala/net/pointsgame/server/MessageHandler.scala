@@ -43,26 +43,29 @@ final class MessageHandler(val serverConnection: ActorRef, oracle: Oracle) exten
       log.debug("Connection closed on event: {}", ev)
   }
   private val prefix = "api"
-  private def completeOracle(question: Question) = complete {
-    oracle.answer(question)
-  }
   private val businessLogicNoUpgrade = runRoute {
     path(prefix / "register") {
       get {
-        parameters('qId.?, 'token.?, 'name, 'password) { (qId, token, name, password) =>
-          completeOracle(RegisterQuestion(qId, token, name, password))
+        parameters('qId.?, 'name, 'password) { (qId, name, password) =>
+          complete {
+            oracle.register(qId, name, password)
+          }
         }
       } ~
         post {
           entity(as[RegisterQuestion]) { question =>
-            completeOracle(question)
+            complete {
+              oracle.register(question.qId, question.name, question.password)
+            }
           }
         }
     } ~
       path(prefix / "question") {
         post {
           entity(as[Question]) { question =>
-            completeOracle(question)
+            complete {
+              oracle.answer(question)
+            }
           }
         }
       }

@@ -7,6 +7,7 @@ val scalamock = "org.scalamock" %% "scalamock-scalatest-support" % "3.2.2" % "te
 val scalacheck = "org.scalacheck" %% "scalacheck" % "1.12.4" % "test"
 val nscalaTime = "com.github.nscala-time" %% "nscala-time" % "2.2.0"
 val scalaz = "org.scalaz" %% "scalaz-core" % "7.1.3"
+val shapeless = "com.chuusai" %% "shapeless" % "2.2.5"
 val akka = "com.typesafe.akka" %% "akka-actor" % "2.3.12"
 val argonaut = "io.argonaut" %% "argonaut" % "6.1"
 val sprayCan = "io.spray" %% "spray-can" % "1.3.3"
@@ -28,7 +29,7 @@ val commonSettings = scalariformSettings ++ Seq(
     "-Xfuture",
     "-Xlint"
   ),
-  ScalariformKeys.preferences := ScalariformKeys.preferences.value
+  preferences := preferences.value
     .setPreference(AlignParameters, true)
     .setPreference(AlignSingleLineCaseStatements, true)
     .setPreference(DoubleIndentClassDeclaration, false),
@@ -38,6 +39,7 @@ val commonSettings = scalariformSettings ++ Seq(
     Wart.Return
   ),
   resolvers ++= Seq(
+    Resolver.sonatypeRepo("releases"),
     sprayRepo
   ),
   libraryDependencies ++= Seq(
