@@ -4,9 +4,10 @@ import com.github.nscala_time.time.Imports._
 import slick.driver.SQLiteDriver.api._
 import com.github.tototoshi.slick.SQLiteJodaSupport._
 import net.pointsgame.domain.model.RoomMessage
+import net.pointsgame.domain.Constants
 
 final class RoomMessages(tag: Tag) extends BaseTable[RoomMessage](tag, "RoomMessages") {
-  def body = column[String]("Body")
+  def body = column[String]("Body", O.Length(Constants.maxMessageLength))
   def roomId = column[Int]("RoomId")
   def senderId = column[Int]("SenderId")
   def sendingDate = column[DateTime]("SendingDate")

@@ -29,11 +29,12 @@ object Main extends App {
 
   val userRepository = SlickUserRepository(db)
   val tokenRepository = SlickTokenRepository(db)
+  val roomRepository = SlickRoomRepository(db)
   val roomMessageRepository = SlickRoomMessageRepository(db)
 
   val tokenService = new TokenService(tokenRepository)
   val accountService = new AccountService(userRepository, tokenService)
-  val roomMessageService = new RoomMessageService(roomMessageRepository)
+  val roomMessageService = new RoomMessageService(roomMessageRepository, roomRepository, accountService)
 
   val services = Services(accountService, tokenService, roomMessageService)
 

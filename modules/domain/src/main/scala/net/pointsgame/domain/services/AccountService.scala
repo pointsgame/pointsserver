@@ -8,18 +8,10 @@ import Scalaz._
 import net.pointsgame.domain.model.User
 import net.pointsgame.domain.repositories.UserRepository
 import net.pointsgame.domain.{ Constants, DomainException }
-import net.pointsgame.domain.helpers.Hasher
-import net.pointsgame.domain.helpers.Hoists._
+import net.pointsgame.domain.helpers.{ Hasher, Validator }
 
 final class AccountService(userRepository: UserRepository, tokenService: TokenService) {
-  def checkName[T](name: String)(f: => Future[T]): Future[T] = //TODO: check name characters.
-    if (name.isEmpty)
-      Future.failed(new DomainException("Name shouldn't be empty."))
-    else if (name.length > Constants.maxNameLength)
-      Future.failed(new DomainException(s"Name length should be not more than ${Constants.maxNameLength}."))
-    else
-      f
-  def register(name: String, password: String): Future[(Int, String)] = checkName(name) {
+  def register(name: String, password: String): Future[(Int, String)] = Validator.checkUserName(name) {
     for {
       exists <- userRepository.existsWithName(name)
       userId <- if (exists) {
@@ -31,16 +23,15 @@ final class AccountService(userRepository: UserRepository, tokenService: TokenSe
       token <- tokenService.create(userId)
     } yield (userId, token.tokenString)
   }
-  def login(name: String, password: String): Future[(Int, String)] = checkName(name) {
+  def login(name: String, password: String): Future[(Int, String)] = Validator.checkUserName(name) {
     val result = for {
       user <- OptionT.optionT(userRepository.getByName(name))
-      userId <- user.id.hoist[Future]
       token <- (if (Hasher.hash(password, user.salt) sameElements user.passwordHash) {
-        tokenService.create(userId)
+        tokenService.create(user.id.get)
       } else {
         Future.failed(new DomainException(s"Wrong password."))
       }).liftM[OptionT]
-    } yield (userId, token.tokenString)
+    } yield (user.id.get, token.tokenString)
     result.getOrElseF(Future.failed(new DomainException("User with name doesn't exist.")))
   }
   def withUser[T](tokenString: String)(f: User => Future[T]): Future[T] = tokenService.withToken(tokenString) { token =>

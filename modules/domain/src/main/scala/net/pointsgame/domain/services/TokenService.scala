@@ -8,7 +8,7 @@ import Scalaz._
 import net.pointsgame.domain.model.Token
 import net.pointsgame.domain.repositories.TokenRepository
 import net.pointsgame.domain.helpers.Tokenizer
-import net.pointsgame.domain.{DomainException, Constants}
+import net.pointsgame.domain.{ DomainException, Constants }
 
 final class TokenService(tokenRepository: TokenRepository) {
   def create(userId: Int): Future[Token] = {
