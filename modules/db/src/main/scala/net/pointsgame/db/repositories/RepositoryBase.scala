@@ -9,6 +9,9 @@ import net.pointsgame.domain.repositories.Repository
 
 abstract class RepositoryBase[T <: Entity, B <: BaseTable[T]](db: Database) extends Repository[T] {
   val query: TableQuery[B]
+  override def all: Future[Seq[T]] = db.run {
+    query.result
+  }
   override def exists(id: Int): Future[Boolean] = db.run {
     query.filter(_.id === id).exists.result
   }

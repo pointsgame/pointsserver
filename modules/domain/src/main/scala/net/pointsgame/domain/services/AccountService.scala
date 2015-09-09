@@ -9,6 +9,7 @@ import net.pointsgame.domain.model.User
 import net.pointsgame.domain.repositories.UserRepository
 import net.pointsgame.domain.{ Constants, DomainException }
 import net.pointsgame.domain.helpers.{ Hasher, Validator }
+import net.pointsgame.domain.helpers.Hoists._
 
 final class AccountService(userRepository: UserRepository, tokenService: TokenService) {
   def register(name: String, password: String): Future[(Int, String)] = Validator.checkUserName(name) {
@@ -26,8 +27,9 @@ final class AccountService(userRepository: UserRepository, tokenService: TokenSe
   def login(name: String, password: String): Future[(Int, String)] = Validator.checkUserName(name) {
     val result = for {
       user <- OptionT.optionT(userRepository.getByName(name))
+      userId <- user.id.hoist[Future]
       token <- (if (Hasher.hash(password, user.salt) sameElements user.passwordHash) {
-        tokenService.create(user.id.get)
+        tokenService.create(userId)
       } else {
         Future.failed(new DomainException(s"Wrong password."))
       }).liftM[OptionT]

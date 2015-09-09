@@ -1,6 +1,7 @@
 package net.pointsgame.server
 
 import java.nio.file.{ Paths, Files }
+import net.pointsgame.domain.managers.ConnectionManager
 import slick.driver.SQLiteDriver.api._
 import akka.actor.{ Props, ActorSystem }
 import akka.io.IO
@@ -38,9 +39,9 @@ object Main extends App {
 
   val services = Services(accountService, tokenService, roomMessageService)
 
-  val oracle = new Oracle(services)
+  val connectionManager = new ConnectionManager
 
-  val handler = system.actorOf(Props(classOf[ConnectionHandler], oracle), "handler")
+  val handler = system.actorOf(Props(classOf[ConnectionHandler], services, connectionManager), "handler")
 
   IO(Http) ! Http.Bind(handler, "localhost", 8080)
 }

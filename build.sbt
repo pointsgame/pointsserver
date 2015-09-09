@@ -46,7 +46,8 @@ val commonSettings = scalariformSettings ++ Seq(
     scalatest,
     scalamock,
     scalacheck,
-    scalaz
+    scalaz,
+    akka
   )
 )
 

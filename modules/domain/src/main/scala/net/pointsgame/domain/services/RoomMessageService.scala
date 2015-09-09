@@ -9,16 +9,15 @@ import net.pointsgame.domain.model.RoomMessage
 import net.pointsgame.domain.helpers.Validator
 
 final class RoomMessageService(roomMessageRepository: RoomMessageRepository, roomRepository: RoomRepository, accountService: AccountService) {
-  def send(tokenString: String, roomId: Int, body: String): Future[Int] = Validator.checkMessageBody(body) {
-    accountService.withUser(tokenString) { user =>
-      for {
-        exists <- roomRepository.exists(roomId)
-        messageId <- if (exists) {
-          roomMessageRepository.insert(RoomMessage(None, body, roomId, user.id.get, DateTime.now()))
-        } else {
-          Future.failed(new DomainException("Room with such name doesn't exist."))
-        }
-      } yield messageId
-    }
+  def send(userId: Int, roomId: Int, body: String): Future[Int] = Validator.checkMessageBody(body) {
+    for {
+      exists <- roomRepository.exists(roomId)
+      message = RoomMessage(None, body, roomId, userId, DateTime.now())
+      messageId <- if (exists) {
+        roomMessageRepository.insert(message)
+      } else {
+        Future.failed(new DomainException("Room with such name doesn't exist."))
+      }
+    } yield messageId
   }
 }

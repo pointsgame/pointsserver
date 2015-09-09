@@ -7,34 +7,29 @@ import Argonaut._
 
 sealed trait Question {
   def qId: Option[String]
-  def tokenOption: Option[String] =
-    None
-}
-
-sealed trait QuestionWithToken extends Question {
-  def token: String
-  override def tokenOption: Option[String] =
-    Some(token)
+  def token: Option[String]
 }
 
 final case class RegisterQuestion(
   qId:      Option[String],
+  token:    Option[String],
   name:     String,
   password: String
 ) extends Question
 
 final case class LoginQuestion(
   qId:      Option[String],
+  token:    Option[String],
   name:     String,
   password: String
 ) extends Question
 
 final case class SendRoomMessageQuestion(
   qId:    Option[String],
-  token:  String,
+  token:  Option[String],
   roomId: Int,
   body:   String
-) extends QuestionWithToken
+) extends Question
 
 /*
 final case class SubscribeToRoomQuestion(
@@ -50,6 +45,7 @@ object Question {
   implicit val registerQuestionDecodeJson = DecodeJson { c =>
     (
       (c --\ "qId").as[String].option |@|
+      (c --\ "token").as[String].option |@|
       (c --\ "name").as[String] |@|
       (c --\ "password").as[String]
     ) { RegisterQuestion }
@@ -57,6 +53,7 @@ object Question {
   implicit val loginQuestionDecodeJson = DecodeJson { c =>
     (
       (c --\ "qId").as[String].option |@|
+      (c --\ "token").as[String].option |@|
       (c --\ "name").as[String] |@|
       (c --\ "password").as[String]
     ) { LoginQuestion }
@@ -64,7 +61,7 @@ object Question {
   implicit val sendRoomMessageQuestionDecodeJson = DecodeJson { c =>
     (
       (c --\ "qId").as[String].option |@|
-      (c --\ "token").as[String] |@|
+      (c --\ "token").as[String].option |@|
       (c --\ "roomId").as[Int] |@|
       (c --\ "body").as[String]
     ) { SendRoomMessageQuestion }
