@@ -21,6 +21,7 @@ import net.pointsgame.db.schema._
 import net.pointsgame.domain.managers._
 import net.pointsgame.domain.services._
 import net.pointsgame.domain.api._
+import net.pointsgame.domain.model.Room
 
 object Main extends App {
   val dbName = "pointsgame.db"
@@ -28,12 +29,13 @@ object Main extends App {
   val db = Database.forURL(s"jdbc:sqlite:$dbName", driver = "org.sqlite.JDBC")
 
   if (!Files.exists(Paths.get(dbName))) {
-    val setup = DBIO seq {
-      TableQuery[Users].schema ++
-        TableQuery[Rooms].schema ++
-        TableQuery[RoomMessages].schema ++
-        TableQuery[Tokens].schema
-    }.create
+    val setup = DBIO.seq(
+      (TableQuery[Users].schema ++
+      TableQuery[Rooms].schema ++
+      TableQuery[RoomMessages].schema ++
+      TableQuery[Tokens].schema).create,
+      TableQuery[Rooms] += Room(None, "main")
+    )
     db.run(setup)
   }
 
