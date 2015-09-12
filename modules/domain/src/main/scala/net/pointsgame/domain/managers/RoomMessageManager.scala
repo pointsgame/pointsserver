@@ -5,10 +5,12 @@ import scalaz.concurrent.Task
 import net.pointsgame.domain.repositories.RoomRepository
 import net.pointsgame.domain.helpers.TrieMapUpdater._
 import net.pointsgame.domain.DomainException
+import net.pointsgame.domain.model.RoomMessage
+import net.pointsgame.domain.api.RoomMessageDelivery
 
-final class RoomMessageManager(roomRepository: RoomRepository) {
+final class RoomMessageManager(connectionManager: ConnectionManager, roomRepository: RoomRepository) {
   private val subscribers = concurrent.TrieMap.empty[Int, Set[String]]
-  def subscribe(roomId: Int, connectionId: String): Task[Unit] =
+  def subscribe(roomId: Int, connectionId: String): Task[Unit] = //check connection
     for {
       exists <- if (subscribers.contains(roomId))
         Task.now(true)
@@ -34,5 +36,10 @@ final class RoomMessageManager(roomRepository: RoomRepository) {
     } else {
       Task.fail(new DomainException("Room with such id doesn't exist or you doesn't subscribed."))
     }
-  def send(userId: Int, roomId: Int, body: String): Task[Int] = ???
+  def send(roomMessage: RoomMessage): Unit =
+    for (connectionIds <- subscribers.get(roomMessage.roomId)) {
+      val delivery = RoomMessageDelivery(roomMessage.id.get, roomMessage.roomId, roomMessage.senderId, roomMessage.body, roomMessage.sendingDate)
+      for (connectionId <- connectionIds)
+        connectionManager.sendToConnection(connectionId, delivery)
+    }
 }

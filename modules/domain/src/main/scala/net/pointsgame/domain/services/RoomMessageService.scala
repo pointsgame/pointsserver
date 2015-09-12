@@ -8,7 +8,7 @@ import net.pointsgame.domain.model.RoomMessage
 import net.pointsgame.domain.helpers.Validator
 
 final case class RoomMessageService(roomMessageRepository: RoomMessageRepository, roomRepository: RoomRepository, accountService: AccountService) {
-  def send(userId: Int, roomId: Int, body: String): Task[Int] = Validator.checkMessageBody(body) {
+  def send(userId: Int, roomId: Int, body: String): Task[RoomMessage] = Validator.checkMessageBody(body) {
     for {
       exists <- roomRepository.exists(roomId)
       message = RoomMessage(None, body, roomId, userId, DateTime.now())
@@ -17,6 +17,6 @@ final case class RoomMessageService(roomMessageRepository: RoomMessageRepository
       } else {
         Task.fail(new DomainException("Room with such name doesn't exist."))
       }
-    } yield messageId
+    } yield message.copy(id = Some(messageId))
   }
 }

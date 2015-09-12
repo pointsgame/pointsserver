@@ -1,5 +1,7 @@
 package net.pointsgame.domain
 
+import scalaz._
+import Scalaz._
 import scalaz.concurrent.Task
 import net.pointsgame.domain.api._
 import net.pointsgame.domain.helpers.Tokenizer
@@ -29,8 +31,13 @@ final class Oracle(services: Services, managers: Managers) {
           services.accountService.login(name, password) map { LoginAnswer(qId, _: Int, _: String) }.tupled
         case SendRoomMessageQuestion(qId, token, roomId, body) =>
           withUserId(userIdOption) { userId =>
-            services.roomMessageService.send(userId, roomId, body) map { SendRoomMessageAnswer(qId, _) }
+            for (roomMessage <- services.roomMessageService.send(userId, roomId, body)) yield {
+              managers.roomMessageManager.send(roomMessage)
+              SendRoomMessageAnswer(qId, roomMessage.id.get)
+            }
           }
+        case SubscribeToRoomQuestion(qId, token, roomId, _connectionId) =>
+          managers.roomMessageManager.subscribe(roomId, connectionId) >| SubscribeToRoomAnswer(qId)
       }
     } yield answer
   } handle {

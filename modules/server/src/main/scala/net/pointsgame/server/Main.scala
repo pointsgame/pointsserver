@@ -49,7 +49,7 @@ object Main extends App {
   val services = Services(accountService, tokenService, roomMessageService)
 
   val connectionManager = new ConnectionManager
-  val roomMessageManager = new RoomMessageManager(roomRepository)
+  val roomMessageManager = new RoomMessageManager(connectionManager, roomRepository)
 
   val managers = Managers(connectionManager, roomMessageManager)
 

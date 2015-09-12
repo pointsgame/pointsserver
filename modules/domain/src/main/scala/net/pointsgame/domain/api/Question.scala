@@ -31,11 +31,14 @@ final case class SendRoomMessageQuestion(
   body:   String
 ) extends Question
 
-/*
 final case class SubscribeToRoomQuestion(
-  qId: Option[String]
+  qId:          Option[String],
+  token:        Option[String],
+  roomId:       Int,
+  connectionId: String
 ) extends Question
 
+/*
 final case class UnsubscribeFromRoomQuestion(
   qId: Option[String]
 ) extends Question
@@ -66,6 +69,14 @@ object Question {
       (c --\ "body").as[String]
     ) { SendRoomMessageQuestion }
   }
+  implicit val subscribeToRoomQuestionDecodeJson = DecodeJson { c =>
+    (
+      (c --\ "qId").as[String].option |@|
+      (c --\ "token").as[String].option |@|
+      (c --\ "roomId").as[Int] |@|
+      (c --\ "connectionId").as[String]
+    ) { SubscribeToRoomQuestion }
+  }
   implicit val questionDecodeJson: DecodeJson[Question] =
     DecodeJson { c =>
       for {
@@ -74,6 +85,7 @@ object Question {
           case "register"        => registerQuestionDecodeJson.decode(c)
           case "login"           => loginQuestionDecodeJson.decode(c)
           case "sendRoomMessage" => sendRoomMessageQuestionDecodeJson.decode(c)
+          case "subscribeToRoom" => subscribeToRoomQuestionDecodeJson.decode(c)
           case _                 => DecodeResult.fail("Unknown question type.", c.history)
         }
       } yield result
