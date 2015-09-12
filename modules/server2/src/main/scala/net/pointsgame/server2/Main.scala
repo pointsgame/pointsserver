@@ -56,7 +56,7 @@ object Main extends App {
       result <- f(oracle).onFinish(_ => Task.now(oracle.close()))
     } yield result
 
-  implicit def questionDecoder[T <: Question : DecodeJson] = jsonOf[T]
+  implicit def questionDecoder[T <: Question: DecodeJson] = jsonOf[T]
   implicit val answerEncoder = jsonEncoderOf[Answer]
 
   val route = HttpService {
