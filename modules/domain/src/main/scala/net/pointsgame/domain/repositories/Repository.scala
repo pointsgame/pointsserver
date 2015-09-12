@@ -1,12 +1,12 @@
 package net.pointsgame.domain.repositories
 
-import scala.concurrent.Future
+import scalaz.concurrent.Task
 import net.pointsgame.domain.model.Entity
 
 trait Repository[T <: Entity] {
-  def all: Future[Seq[T]]
-  def exists(id: Int): Future[Boolean]
-  def getById(id: Int): Future[Option[T]]
-  def deleteById(id: Int): Future[Boolean]
-  def insert(entity: T): Future[Int]
+  def all: Task[Seq[T]]
+  def exists(id: Int): Task[Boolean]
+  def getById(id: Int): Task[Option[T]]
+  def deleteById(id: Int): Task[Boolean]
+  def insert(entity: T): Task[Int]
 }

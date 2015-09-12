@@ -1,7 +1,7 @@
 package net.pointsgame.server
 
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scalaz.concurrent.Task
 import akka.actor.ActorRef
 import akka.pattern.pipe
 import scalaz._
@@ -14,8 +14,10 @@ import spray.can.websocket.frame.{ TextFrame, BinaryFrame }
 import spray.http.HttpRequest
 import spray.routing.HttpServiceActor
 import ArgonautSupport._
+import ScalazSupport._
 import net.pointsgame.domain.api._
 import net.pointsgame.domain.Oracle
+import net.pointsgame.domain.helpers.ScalaScalaz._
 
 final class MessageHandler(val serverConnection: ActorRef, oracle: Oracle) extends HttpServiceActor with WebSocketServerWorker {
   override def receive =
@@ -27,8 +29,8 @@ final class MessageHandler(val serverConnection: ActorRef, oracle: Oracle) exten
       sender ! TextFrame("Binary frames are not supported!")
     case textFrame: TextFrame =>
       Parse.decodeOption[Question](textFrame.payload.utf8String).map(oracle.answer).getOrElse {
-        Future.successful(ErrorAnswer(None, "Invalid question format!"))
-      }.map(_.asJson.nospaces) pipeTo sender
+        Task.now(ErrorAnswer(None, "Invalid question format!"))
+      }.map(_.asJson.nospaces).asScala pipeTo sender
     case frameCommandFailed: FrameCommandFailed =>
       log.error("Frame command failed.", frameCommandFailed)
     case httpRequest: HttpRequest =>
@@ -82,7 +84,7 @@ final class MessageHandler(val serverConnection: ActorRef, oracle: Oracle) exten
             complete {
               roomIdString.parseInt.map(SendRoomMessageQuestion(qId, token, _, body))
                 .map(oracle.answer _)
-                .getOrElse(Future.successful(ErrorAnswer(qId, "roomId shuld be a number."))): Future[Answer]
+                .getOrElse(Task.now(ErrorAnswer(qId, "roomId shuld be a number."))): Task[Answer]
             }
           }
         } ~

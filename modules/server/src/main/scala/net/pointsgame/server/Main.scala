@@ -8,7 +8,7 @@ import akka.io.IO
 import spray.can.Http
 import net.pointsgame.db.schema._
 import net.pointsgame.db.repositories._
-import net.pointsgame.domain.{ Oracle, Services }
+import net.pointsgame.domain.Services
 import net.pointsgame.domain.services._
 
 object Main extends App {
