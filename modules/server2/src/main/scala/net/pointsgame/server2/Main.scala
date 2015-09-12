@@ -56,7 +56,8 @@ object Main extends App {
       result <- f(oracle).onFinish(_ => Task.now(oracle.close()))
     } yield result
 
-  implicit val encoder = jsonEncoderOf[Answer]
+  implicit def questionDecoder[T <: Question : DecodeJson] = jsonOf[T]
+  implicit val answerEncoder = jsonEncoderOf[Answer]
 
   val route = HttpService {
     case req @ GET -> Root / "register" =>
@@ -75,7 +76,7 @@ object Main extends App {
         withOracle { oracle =>
           oracle.answer(question).flatMap(Ok(_))
         }
-      }(jsonOf)
+      }
     case req @ GET -> Root / "login" =>
       val params = req.params
       val qId = params.get("qId")
@@ -92,7 +93,7 @@ object Main extends App {
         withOracle { oracle =>
           oracle.answer(question).flatMap(Ok(_))
         }
-      }(jsonOf)
+      }
     case req @ GET -> Root / "sendRoomMessage" =>
       val params = req.params
       val qId = params.get("qId")
@@ -110,13 +111,13 @@ object Main extends App {
         withOracle { oracle =>
           oracle.answer(question).flatMap(Ok(_))
         }
-      }(jsonOf)
+      }
     case req @ POST -> Root / "question" =>
       req.decode[Question] { question =>
         withOracle { oracle =>
           oracle.answer(question).flatMap(Ok(_))
         }
-      }(jsonOf)
+      }
     case GET -> Root / "ws" =>
       val oracle = new Oracle(services, connectionManager)
       val in = unboundedQueue[WebSocketFrame]
