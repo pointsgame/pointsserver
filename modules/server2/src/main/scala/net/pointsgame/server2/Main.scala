@@ -76,6 +76,47 @@ object Main extends App {
           oracle.answer(question).flatMap(Ok(_))
         }
       }(jsonOf)
+    case req @ GET -> Root / "login" =>
+      val params = req.params
+      val qId = params.get("qId")
+      val token = params.get("token")
+      val answer = for {
+        name <- params.get("name")
+        password <- params.get("password")
+      } yield withOracle { oracle =>
+        oracle.answer(LoginQuestion(qId, token, name, password))
+      }
+      answer.getOrElse(Task.now(ErrorAnswer(qId, "Invalid request!"))).flatMap(Ok(_)(jsonEncoderOf))
+    case req @ POST -> Root / "login" =>
+      req.decode[LoginQuestion] { question =>
+        withOracle { oracle =>
+          oracle.answer(question).flatMap(Ok(_))
+        }
+      }(jsonOf)
+    case req @ GET -> Root / "sendRoomMessage" =>
+      val params = req.params
+      val qId = params.get("qId")
+      val token = params.get("token")
+      val answer = for {
+        roomIdString <- params.get("roomId")
+        roomId <- roomIdString.parseInt.toOption
+        body <- params.get("body")
+      } yield withOracle { oracle =>
+        oracle.answer(SendRoomMessageQuestion(qId, token, roomId, body))
+      }
+      answer.getOrElse(Task.now(ErrorAnswer(qId, "Invalid request!"))).flatMap(Ok(_)(jsonEncoderOf))
+    case req @ POST -> Root / "sendRoomMessage" =>
+      req.decode[SendRoomMessageQuestion] { question =>
+        withOracle { oracle =>
+          oracle.answer(question).flatMap(Ok(_))
+        }
+      }(jsonOf)
+    case req @ POST -> Root / "question" =>
+      req.decode[Question] { question =>
+        withOracle { oracle =>
+          oracle.answer(question).flatMap(Ok(_))
+        }
+      }(jsonOf)
     case GET -> Root / "ws" =>
       val oracle = new Oracle(services, connectionManager)
       val in = unboundedQueue[WebSocketFrame]
