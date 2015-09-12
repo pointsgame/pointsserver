@@ -9,7 +9,7 @@ import net.pointsgame.domain.repositories.TokenRepository
 import net.pointsgame.domain.helpers.Tokenizer
 import net.pointsgame.domain.{ DomainException, Constants }
 
-final class TokenService(tokenRepository: TokenRepository) {
+final case class TokenService(tokenRepository: TokenRepository) {
   def create(userId: Int): Task[Token] = {
     val now = DateTime.now()
     val token = Token(None, userId, Tokenizer.generate(Constants.tokenLength), now, now, false)

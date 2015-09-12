@@ -7,7 +7,7 @@ import net.pointsgame.domain.DomainException
 import net.pointsgame.domain.model.RoomMessage
 import net.pointsgame.domain.helpers.Validator
 
-final class RoomMessageService(roomMessageRepository: RoomMessageRepository, roomRepository: RoomRepository, accountService: AccountService) {
+final case class RoomMessageService(roomMessageRepository: RoomMessageRepository, roomRepository: RoomRepository, accountService: AccountService) {
   def send(userId: Int, roomId: Int, body: String): Task[Int] = Validator.checkMessageBody(body) {
     for {
       exists <- roomRepository.exists(roomId)

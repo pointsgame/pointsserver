@@ -10,7 +10,7 @@ import net.pointsgame.domain.{ Constants, DomainException }
 import net.pointsgame.domain.helpers.{ Hasher, Validator }
 import net.pointsgame.domain.helpers.Hoists._
 
-final class AccountService(userRepository: UserRepository, tokenService: TokenService) {
+final case class AccountService(userRepository: UserRepository, tokenService: TokenService) {
   def register(name: String, password: String): Task[(Int, String)] = Validator.checkUserName(name) {
     for {
       exists <- userRepository.existsWithName(name)

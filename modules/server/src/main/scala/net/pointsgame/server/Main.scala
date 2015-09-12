@@ -15,7 +15,7 @@ import org.http4s.websocket.WebsocketBits._
 import org.http4s.server.blaze._
 import org.http4s.argonaut._
 import slick.driver.SQLiteDriver.api._
-import net.pointsgame.domain.{ Services, Oracle }
+import net.pointsgame.domain.{ Managers, Services, Oracle }
 import net.pointsgame.db.repositories._
 import net.pointsgame.db.schema._
 import net.pointsgame.domain.managers._
@@ -42,17 +42,20 @@ object Main extends App {
   val roomRepository = SlickRoomRepository(db)
   val roomMessageRepository = SlickRoomMessageRepository(db)
 
-  val tokenService = new TokenService(tokenRepository)
-  val accountService = new AccountService(userRepository, tokenService)
-  val roomMessageService = new RoomMessageService(roomMessageRepository, roomRepository, accountService)
+  val tokenService = TokenService(tokenRepository)
+  val accountService = AccountService(userRepository, tokenService)
+  val roomMessageService = RoomMessageService(roomMessageRepository, roomRepository, accountService)
 
   val services = Services(accountService, tokenService, roomMessageService)
 
   val connectionManager = new ConnectionManager
+  val roomMessageManager = new RoomMessageManager(roomRepository)
+
+  val managers = Managers(connectionManager, roomMessageManager)
 
   def withOracle[T](f: Oracle => Task[T]): Task[T] =
     for {
-      oracle <- Task.delay(new Oracle(services, connectionManager))
+      oracle <- Task.delay(new Oracle(services, managers))
       result <- f(oracle).onFinish(_ => Task.now(oracle.close()))
     } yield result
 
@@ -70,7 +73,7 @@ object Main extends App {
       } yield withOracle { oracle =>
         oracle.answer(RegisterQuestion(qId, token, name, password))
       }
-      answer.getOrElse(Task.now(ErrorAnswer(qId, "Invalid request!"))).flatMap(Ok(_)(jsonEncoderOf))
+      answer.getOrElse(Task.now(ErrorAnswer(qId, "Invalid request!"))).flatMap(Ok(_))
     case req @ POST -> Root / "register" =>
       req.decode[RegisterQuestion] { question =>
         withOracle { oracle =>
@@ -87,7 +90,7 @@ object Main extends App {
       } yield withOracle { oracle =>
         oracle.answer(LoginQuestion(qId, token, name, password))
       }
-      answer.getOrElse(Task.now(ErrorAnswer(qId, "Invalid request!"))).flatMap(Ok(_)(jsonEncoderOf))
+      answer.getOrElse(Task.now(ErrorAnswer(qId, "Invalid request!"))).flatMap(Ok(_))
     case req @ POST -> Root / "login" =>
       req.decode[LoginQuestion] { question =>
         withOracle { oracle =>
@@ -105,7 +108,7 @@ object Main extends App {
       } yield withOracle { oracle =>
         oracle.answer(SendRoomMessageQuestion(qId, token, roomId, body))
       }
-      answer.getOrElse(Task.now(ErrorAnswer(qId, "Invalid request!"))).flatMap(Ok(_)(jsonEncoderOf))
+      answer.getOrElse(Task.now(ErrorAnswer(qId, "Invalid request!"))).flatMap(Ok(_))
     case req @ POST -> Root / "sendRoomMessage" =>
       req.decode[SendRoomMessageQuestion] { question =>
         withOracle { oracle =>
@@ -119,7 +122,7 @@ object Main extends App {
         }
       }
     case GET -> Root / "ws" =>
-      val oracle = new Oracle(services, connectionManager)
+      val oracle = new Oracle(services, managers)
       val in = unboundedQueue[WebSocketFrame]
       val out = unboundedQueue[WebSocketFrame]
       val answers = in.dequeue.collect {
