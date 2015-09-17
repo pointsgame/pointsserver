@@ -31,7 +31,7 @@ val commonSettings = scalariformSettings ++ Seq(
     "-Xfuture",
     "-Xlint"
   ),
-  preferences := preferences.value
+  scalariformPreferences := scalariformPreferences.value
     .setPreference(AlignParameters, true)
     .setPreference(AlignSingleLineCaseStatements, true)
     .setPreference(DoubleIndentClassDeclaration, false),
