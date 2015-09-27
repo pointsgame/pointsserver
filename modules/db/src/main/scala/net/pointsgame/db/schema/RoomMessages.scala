@@ -8,8 +8,8 @@ import net.pointsgame.domain.Constants
 
 final class RoomMessages(tag: Tag) extends BaseTable[RoomMessage](tag, "RoomMessages") {
   def body = column[String]("Body", O.Length(Constants.maxMessageLength))
-  def roomId = column[Int]("RoomId")
-  def senderId = column[Int]("SenderId")
+  def roomId = column[Long]("RoomId")
+  def senderId = column[Long]("SenderId")
   def sendingDate = column[DateTime]("SendingDate")
   def roomIdForeignKey = foreignKey("RoomIdForeignKey", roomId, TableQuery[Rooms])(_.id)
   def senderIdForeignKey = foreignKey("SenderIdForeignKey", senderId, TableQuery[Users])(_.id)

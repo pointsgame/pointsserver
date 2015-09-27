@@ -6,11 +6,11 @@ import net.pointsgame.domain.repositories.RoomRepository
 import net.pointsgame.domain.helpers.TrieMapUpdater._
 import net.pointsgame.domain.DomainException
 import net.pointsgame.domain.model.RoomMessage
-import net.pointsgame.domain.api.RoomMessageDelivery
+import net.pointsgame.domain.api.RoomMessageWsDelivery
 
 final class RoomMessageManager(connectionManager: ConnectionManager, roomRepository: RoomRepository) {
-  private val subscribers = concurrent.TrieMap.empty[Int, Set[String]]
-  def subscribe(roomId: Int, connectionId: String): Task[Unit] = //check connection
+  private val subscribers = concurrent.TrieMap.empty[Long, Set[Long]]
+  def subscribe(roomId: Long, connectionId: Long): Task[Unit] = //check connection
     for {
       exists <- if (subscribers.contains(roomId))
         Task.now(true)
@@ -26,7 +26,7 @@ final class RoomMessageManager(connectionManager: ConnectionManager, roomReposit
         Task.fail(new DomainException("Room with such id doesn't exist."))
       }
     } yield result
-  def unsubscribe(roomId: Int, connectionId: String): Task[Unit] =
+  def unsubscribe(roomId: Int, connectionId: Long): Task[Unit] =
     if (subscribers.contains(roomId)) {
       if (subscribers.updateWithCond(roomId, Set.empty, s => if (s.contains(connectionId)) Some(s - connectionId) else None).isDefined) {
         Task.now(())
@@ -38,7 +38,7 @@ final class RoomMessageManager(connectionManager: ConnectionManager, roomReposit
     }
   def send(roomMessage: RoomMessage): Unit =
     for (connectionIds <- subscribers.get(roomMessage.roomId)) {
-      val delivery = RoomMessageDelivery(roomMessage.id.get, roomMessage.roomId, roomMessage.senderId, roomMessage.body, roomMessage.sendingDate)
+      val delivery = RoomMessageWsDelivery(roomMessage.id.get, roomMessage.roomId, roomMessage.senderId, roomMessage.body, roomMessage.sendingDate)
       for (connectionId <- connectionIds)
         connectionManager.sendToConnection(connectionId, delivery)
     }

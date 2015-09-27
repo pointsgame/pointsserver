@@ -10,7 +10,7 @@ import net.pointsgame.domain.{ Constants, DomainException }
 import net.pointsgame.domain.helpers.{ Hasher, Validator }
 
 final case class AccountService(userRepository: UserRepository, tokenService: TokenService) {
-  def register(name: String, password: String): Task[(Int, String)] = Validator.checkUserName(name) {
+  def register(name: String, password: String): Task[(Long, String)] = Validator.checkUserName(name) {
     for {
       exists <- userRepository.existsWithName(name)
       userId <- if (exists) {
@@ -22,7 +22,7 @@ final case class AccountService(userRepository: UserRepository, tokenService: To
       token <- tokenService.create(userId)
     } yield (userId, token.tokenString)
   }
-  def login(name: String, password: String): Task[(Int, String)] = Validator.checkUserName(name) {
+  def login(name: String, password: String): Task[(Long, String)] = Validator.checkUserName(name) {
     val result = for {
       user <- OptionT.optionT(userRepository.getByName(name))
       token <- (if (Hasher.hash(password, user.salt) sameElements user.passwordHash) {

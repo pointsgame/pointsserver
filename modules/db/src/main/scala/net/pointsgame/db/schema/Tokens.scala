@@ -6,7 +6,7 @@ import com.github.tototoshi.slick.SQLiteJodaSupport._
 import net.pointsgame.domain.model.Token
 
 final class Tokens(tag: Tag) extends BaseTable[Token](tag, "Tokens") {
-  def userId = column[Int]("UserId")
+  def userId = column[Long]("UserId")
   def tokenString = column[String]("Token")
   def creationDate = column[DateTime]("CreationDate")
   def lastAccessDate = column[DateTime]("LastAccessDate")

@@ -5,8 +5,8 @@ import net.pointsgame.domain.model.Entity
 
 trait Repository[T <: Entity] {
   def all: Task[Seq[T]]
-  def exists(id: Int): Task[Boolean]
-  def getById(id: Int): Task[Option[T]]
-  def deleteById(id: Int): Task[Boolean]
-  def insert(entity: T): Task[Int]
+  def exists(id: Long): Task[Boolean]
+  def getById(id: Long): Task[Option[T]]
+  def deleteById(id: Long): Task[Boolean]
+  def insert(entity: T): Task[Long]
 }
