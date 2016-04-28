@@ -256,7 +256,7 @@ final class Field private (
           new Field(updatedVector, newScoreRed, newScoreBlack, ColoredPos(pos, player) :: moves, Some(ColoredChain(enemyEmptyBaseChain, enemy)))
         }
       } else {
-        val newEmptyBase = emptyCaptures.flatMap(_._2)
+        val newEmptyBase = emptyCaptures.flatMap(_._2).filter(p => vector(p.x, p.y) == EmptyPosValue)
         val newScoreRed = if (player == Player.Red) scoreRed + capturedCount else scoreRed - freedCount
         val newScoreBlack = if (player == Player.Black) scoreBlack + capturedCount else scoreBlack - freedCount
         val updatedVector1 = vector.updated(pos.x, pos.y, PlayerPosValue(player))
