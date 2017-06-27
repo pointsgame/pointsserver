@@ -167,6 +167,42 @@ class FieldTest extends FunSuite with DiagrammedAssertions {
       }
   }
 
+  test("surround in opposite turn") {
+    constructLastFieldWithRotations(
+      """
+      .a.
+      aBa
+      .a.
+      """
+    ).foreach {
+        case (field, surroundings, rotate) =>
+          assert(field.scoreRed == 1)
+          assert(field.scoreBlack == 0)
+          assert(surroundings.size == 1)
+      }
+  }
+
+  test("partly surround in opposite turn") {
+    constructLastFieldWithRotations(
+      """
+      .a..
+      aBa.
+      .a.a
+      ..a.
+      """
+    ).foreach {
+        case (field, surroundings, rotate) =>
+          assert(field.scoreRed == 1)
+          assert(field.scoreBlack == 0)
+          assert(surroundings.size == 1)
+          assert(field.isPuttingAllowed(rotate(Pos(2, 2))))
+          assert(!field.isPuttingAllowed(rotate(Pos(2, 3))))
+          assert(!field.isPuttingAllowed(rotate(Pos(2, 1))))
+          assert(!field.isPuttingAllowed(rotate(Pos(3, 2))))
+          assert(!field.isPuttingAllowed(rotate(Pos(1, 2))))
+      }
+  }
+
   test("a hole inside a surrounding") {
     constructLastFieldWithRotations(
       """
@@ -190,7 +226,7 @@ class FieldTest extends FunSuite with DiagrammedAssertions {
       }
   }
 
-  test("a hole inside a surrounding, after 'control' surrounding") {
+  test("a hole inside a surrounding, after opposite turn surrounding") {
     constructLastFieldWithRotations(
       """
       ....b....
@@ -247,8 +283,8 @@ class FieldTest extends FunSuite with DiagrammedAssertions {
     constructLastFieldWithRotations(
       """
       .a..
-      aAa.
-      .bAa
+      aBa.
+      .cBa
       ..a.
       """
     ).foreach {
@@ -264,7 +300,7 @@ class FieldTest extends FunSuite with DiagrammedAssertions {
     constructLastFieldWithRotations(
       """
       .a.a.
-      aAbAa
+      aBcBa
       .a.a.
       """
     ).foreach {
@@ -280,14 +316,32 @@ class FieldTest extends FunSuite with DiagrammedAssertions {
     constructLastFieldWithRotations(
       """
       ..a..
-      .aAa.
-      ..bAa
-      .aAa.
+      .aBa.
+      ..cBa
+      .aBa.
       ..a..
       """
     ).foreach {
         case (field, surroundings, rotate) =>
           assert(field.scoreRed == 3)
+          assert(field.scoreBlack == 0)
+
+          assert(field.lastSurroundChain.map(_.chain.size) == Some(8))
+      }
+  }
+
+  test("2 surroundings with common dot, one borderline empty place") {
+    constructLastFieldWithRotations(
+      """
+      ..a..
+      .aBa.
+      ..c.a
+      .aBa.
+      ..a..
+      """
+    ).foreach {
+        case (field, surroundings, rotate) =>
+          assert(field.scoreRed == 2)
           assert(field.scoreBlack == 0)
 
           assert(field.lastSurroundChain.map(_.chain.size) == Some(8))

@@ -1,7 +1,8 @@
 package net.pointsgame.paper
 
 object Images {
-  /** Every letter means a dot that should be placed on the field.
+  /**
+   * Every letter means a dot that should be placed on the field.
    *  Lower-cases are always Red, upper-cases are always Black.
    *  Order by which appropriate points are placed:
    *  all 'a' points (Red), all 'A' points (Black),
