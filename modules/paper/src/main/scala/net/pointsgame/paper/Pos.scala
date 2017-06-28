@@ -27,7 +27,8 @@ final case class Pos(x: Int, y: Int) {
 
 object Pos extends ((Int, Int) => Pos) {
   implicit val ordering: Ordering[Pos] = new Ordering[Pos] {
+    private val tupleOrdering = implicitly[Ordering[(Int, Int)]]
     override def compare(a: Pos, b: Pos): Int =
-      implicitly[Ordering[(Int, Int)]].compare(a.tuple, b.tuple)
+      tupleOrdering.compare(a.tuple, b.tuple)
   }
 }

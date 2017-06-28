@@ -6,6 +6,7 @@ import org.scalatest.prop.Checkers
 import org.scalatest.{ DiagrammedAssertions, FunSuite }
 import scala.util.{ Random, Try }
 
+/** Plays random games and checks basic consistency */
 class RandomGameFieldTest extends FunSuite with DiagrammedAssertions with Checkers {
   val minSize = 3
   val maxSize = 50

@@ -1,9 +1,9 @@
 package net.pointsgame.paper
 
 final case class Vector2D[T](width: Int, vector: Vector[T]) extends Iterable[T] {
-  assert(vector.size > 0, "Vector2D: Vector is empty.")
+  assert(vector.nonEmpty, "Vector2D: Vector is empty.")
   assert(vector.size % width == 0, "Vector2D: Vector length is not divisible by width.")
-  val height = vector.size / width
+  val height: Int = vector.size / width
   private def toIndex(x: Int, y: Int): Int =
     y * width + x
   private def toX(idx: Int): Int =

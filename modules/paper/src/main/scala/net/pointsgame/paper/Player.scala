@@ -1,21 +1,22 @@
 package net.pointsgame.paper
 
 sealed trait Player {
-  def next: Player
+  def opponent: Player
 }
 
 object Player {
   case object Red extends Player {
-    override def next: Player =
+    override def opponent: Player =
       Black
   }
   case object Black extends Player {
-    override def next: Player =
+    override def opponent: Player =
       Red
   }
-  def apply(boolean: Boolean): Player =
+  def apply(boolean: Boolean): Player = {
     if (boolean)
       Red
     else
       Black
+  }
 }

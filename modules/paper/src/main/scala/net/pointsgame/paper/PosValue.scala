@@ -44,7 +44,7 @@ final case class BasePosValue(player: Player, enemy: Boolean) extends PosValue {
   override def isPlayersPoint(player: Player): Boolean =
     false
   override def isCapturedPoint(player: Player): Boolean =
-    this.player == player.next && enemy
+    this.player == player.opponent && enemy
 }
 
 final case class EmptyBasePosValue(player: Player) extends PosValue {

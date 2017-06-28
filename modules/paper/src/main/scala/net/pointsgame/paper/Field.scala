@@ -221,7 +221,7 @@ final class Field private (
   }
   def putPoint(pos: Pos, player: Player): Field = {
     require(isPuttingAllowed(pos), s"Field: putting not allowed at $pos.")
-    val enemy = player.next
+    val enemy = player.opponent
     val value = apply(pos)
     if (value.isEmptyBase(player)) {
       new Field(vector.updated(pos.x, pos.y, PlayerPosValue(player)), scoreRed, scoreBlack, ColoredPos(pos, player) :: moves, None)
