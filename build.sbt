@@ -21,6 +21,7 @@ val http4sArgonaut = "org.http4s" %% "http4s-argonaut" % "0.10.0"
 
 val commonSettings = scalariformSettings ++ Seq(
   version := "1.0.0-SNAPSHOT",
+  organization := "net.pointsgame",
   scalaVersion := "2.11.7",
   scalacOptions ++= Seq(
     "-unchecked",
@@ -47,9 +48,7 @@ val commonSettings = scalariformSettings ++ Seq(
   libraryDependencies ++= Seq(
     scalatest,
     scalamock,
-    scalacheck,
-    scalaz,
-    scalazConcurrent
+    scalacheck
   )
 )
 
@@ -63,7 +62,7 @@ lazy val `server` = project.in(file("./modules/server"))
 
 lazy val `domain` = project.in(file("./modules/domain"))
   .settings(commonSettings: _*)
-  .settings(libraryDependencies ++= Seq(nscalaTime, argonaut, akka))
+  .settings(libraryDependencies ++= Seq(nscalaTime, argonaut, akka, scalaz, scalazConcurrent))
 
 lazy val `db` = project.in(file("./modules/db"))
   .settings(commonSettings: _*)
