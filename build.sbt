@@ -22,7 +22,7 @@ val http4sArgonaut = "org.http4s" %% "http4s-argonaut" % "0.10.0"
 val commonSettings = scalariformSettings ++ Seq(
   version := "1.0.0-SNAPSHOT",
   organization := "net.pointsgame",
-  scalaVersion := "2.11.7",
+  scalaVersion := "2.11.8",
   scalacOptions ++= Seq(
     "-unchecked",
     "-deprecation",

@@ -288,7 +288,7 @@ final class Field private (
   }
 }
 
-object Field extends ((Int, Int) => Field) {
+object Field {
   def apply(width: Int, height: Int): Field =
     new Field(width, height)
 }
