@@ -37,7 +37,8 @@ val commonSettings = scalariformSettings ++ Seq(
     .setPreference(AlignSingleLineCaseStatements, true)
     .setPreference(DoubleIndentClassDeclaration, false),
   wartremoverWarnings ++= Seq(
-    Wart.Any2StringAdd,
+    Wart.ToString,
+    Wart.StringPlusAny,
     Wart.Null,
     Wart.Return
   ),
