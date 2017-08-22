@@ -220,7 +220,7 @@ final class Field private (
       _mergeCaptureChains(chains)
   }
   def putPoint(pos: Pos, player: Player): Field = {
-    require(isPuttingAllowed(pos), s"Field: putting not allowed at $pos.")
+    require(isPuttingAllowed(pos), s"Putting not allowed at $pos.")
     val enemy = player.opponent
     val value = apply(pos)
     if (value.isEmptyBase(player)) {

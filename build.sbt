@@ -2,9 +2,9 @@ import scalariform.formatter.preferences._
 
 val scalazRepo = "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases"
 
-val scalatest = "org.scalatest" %% "scalatest" % "2.2.4" % "test"
-val scalamock = "org.scalamock" %% "scalamock-scalatest-support" % "3.2.2" % "test"
-val scalacheck = "org.scalacheck" %% "scalacheck" % "1.12.4" % "test"
+val scalatest = "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+val scalamock = "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % "test"
+val scalacheck = "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"
 val nscalaTime = "com.github.nscala-time" %% "nscala-time" % "2.2.0"
 val scalaz = "org.scalaz" %% "scalaz-core" % "7.1.3"
 val scalazConcurrent = "org.scalaz" %% "scalaz-concurrent" % "7.1.3"
@@ -52,19 +52,19 @@ val commonSettings = scalariformSettings ++ Seq(
   )
 )
 
-lazy val `paper` = project.in(file("./modules/paper"))
+lazy val paper = project.in(file("./modules/paper"))
   .settings(commonSettings: _*)
 
-lazy val `server` = project.in(file("./modules/server"))
+lazy val server = project.in(file("./modules/server"))
   .settings(commonSettings: _*)
   .settings(libraryDependencies ++= Seq(http4sDsl, http4sBlaze, http4sArgonaut, argonaut, slick, sqliteJdbc))
   .dependsOn(domain, db)
 
-lazy val `domain` = project.in(file("./modules/domain"))
+lazy val domain = project.in(file("./modules/domain"))
   .settings(commonSettings: _*)
   .settings(libraryDependencies ++= Seq(nscalaTime, argonaut, akka, scalaz, scalazConcurrent))
 
-lazy val `db` = project.in(file("./modules/db"))
+lazy val db = project.in(file("./modules/db"))
   .settings(commonSettings: _*)
   .settings(libraryDependencies ++= Seq(nscalaTime, slick, slickJodaMapper))
   .dependsOn(domain)
